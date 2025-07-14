@@ -15,7 +15,7 @@ const OfferSection = () => {
   }, []);
 
   return (
-    <section className="w-full py-20 px-4 md:px-16 bg-gradient-to-r from-pink-400 to-rose-500 text-white relative overflow-hidden">
+    <section className="w-full py-20 px-4 md:px-16 bg-gradient-to-r from-pink-400 to-purple-500 text-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-10 items-center relative z-10">
         {/* Left - Text Content */}
         <div className="space-y-6 animate-fade-in">

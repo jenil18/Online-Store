@@ -12,8 +12,16 @@ import NavLayout from './components/NavLayout';
 import ProductDetail from './pages/ProductDetail';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import { OrderProvider } from './context/OrderContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthPage from './pages/AuthPage';
+import UserNotFound from './pages/UserNotFound';
+import CartPayment from './pages/CartPayment';
+import OrderStatus from './pages/OrderStatus';
+import AdminApproval from './pages/AdminApproval';
+import ResetPassword from './pages/ResetPassword';
+import LoadingBrush from './components/LoadingBrush';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -24,16 +32,13 @@ export default function App() {
   }, []);
 
   if (showSplash) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-pink-500 to-purple-600 text-white text-5xl font-extrabold tracking-wide animate-fade-in">
-        Shree Krishna Beauty Products
-      </div>
-    );
+    return <LoadingBrush />;
   }
 
   return (
     <AuthProvider>
       <CartProvider>
+        <OrderProvider>
         <BrowserRouter>
           <ScrollTop />
             <div className="flex flex-col min-h-screen">
@@ -41,19 +46,26 @@ export default function App() {
               <main className="flex-grow">
                 <Routes>
                   <Route path='/auth' element={<AuthPage />} />
-                  <Route path="/*" element={ <Home /> } />
                   <Route path="/shop" element={ <Shop /> } />
                   <Route path='/about' element={ <About /> } />
                   <Route path='/contact' element={ <Contact /> } />
                   <Route path='/cart' element={ <Cart /> } />
+                    <Route path='/cart/payment' element={<CartPayment />} />
+                    <Route path='/order-status' element={<ProtectedRoute> <OrderStatus /></ProtectedRoute>} />
+                    <Route path='/admin-approval' element={<ProtectedRoute> <AdminApproval /></ProtectedRoute>} />
                   <Route path='/profile' element={<ProtectedRoute> <Profile /></ProtectedRoute>} />
                   <Route path='/product/:id' element={<ProtectedRoute> <ProductDetail /></ProtectedRoute>} />
-                  {/* Add more routes for Products, Contact, etc. */}
+                    <Route path='/user-not-found' element={<UserNotFound />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
+                    <Route path="/payment-success" element={<PaymentSuccessPage />} />
+                    <Route path="/" element={ <Home /> } />
+                    <Route path="/*" element={ <Home /> } />
                 </Routes>
               </main>
               <Footer />
             </div>
         </BrowserRouter>
+        </OrderProvider>
       </CartProvider>
     </AuthProvider>
   );

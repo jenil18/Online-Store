@@ -1,25 +1,50 @@
 import { useParams, Link } from "react-router-dom";
-import products from "../data/products";
 import { useCart } from "../context/CartContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { addToCart } = useCart();
-  const product = products.find((p) => p.id === Number(id));
-
+  const { addToCart, syncCartToBackend } = useCart();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [added, setAdded] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
-  const handleAddToCart = () => {
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`http://localhost:8000/api/products/${id}/`);
+        if (!response.ok) throw new Error('Product not found');
+        const data = await response.json();
+        setProduct(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProduct();
+  }, [id]);
+
+  const handleAddToCart = async () => {
     addToCart(product);
+    await syncCartToBackend();
     setAdded(true);
     setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 2500); // Hide popup after 2.5s
+    setTimeout(() => setShowPopup(false), 2500);
   };
 
-  if (!product)
-    return <div className="min-h-screen flex justify-center items-center">Product Not Found</div>;
+  if (loading) return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
+  if (error || !product) return <div className="min-h-screen flex justify-center items-center">Product Not Found</div>;
+
+  // Use the image URL directly from the API response
+  const imageUrl = product.image || null;
+  
+  console.log('Product data:', product);
+  console.log('Image URL from API:', product.image);
 
   return (
     <section className="min-h-screen py-16 px-4 mt-[20px] md:px-20 bg-gray-400 relative">
@@ -31,18 +56,22 @@ const ProductDetail = () => {
       )}
 
       <div className="grid md:grid-cols-2 gap-12 items-center max-w-7xl mx-auto">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full rounded-3xl shadow-2xl"
-        />
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={product.name}
+            className="w-full rounded-3xl shadow-2xl"
+            onError={() => setImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-64 bg-gray-200 rounded-3xl flex items-center justify-center">
+            <p className="text-gray-500">No image available</p>
+          </div>
+        )}
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-black">{product.name}</h1>
           <p className="text-2xl font-semibold text-white">&#8377; {product.price}</p>
-          <p className="text-black">
-            This is a premium cosmetic product crafted for your beauty needs. Enjoy flawless
-            results and gentle care with our formula.
-          </p>
+          <p className="text-black">{product.description || 'This is a premium cosmetic product crafted for your beauty needs. Enjoy flawless results and gentle care with our formula.'}</p>
 
           <div className="flex flex-wrap gap-4 pt-4">
             <button
