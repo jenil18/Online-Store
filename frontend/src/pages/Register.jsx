@@ -1,94 +1,60 @@
 import { useState } from "react";
-import bcrypt from "bcryptjs";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
   const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
     phone: "",
     altPhone: "",
-    email: "",
-    salon: "",
     address: "",
     city: "",
-    username: "",
-    password: "",
+    salon: "",
   });
-
+  const [error, setError] = useState("");
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleRegister = () => {
-    const {
-      phone,
-      email,
-      salon,
-      address,
-      city,
-      username,
-      password,
-    } = form;
-
-    if (
-      !phone ||
-      !email ||
-      !salon ||
-      !address ||
-      !city ||
-      !username ||
-      !password
-    ) {
-      alert("Please fill in all required fields.");
+  const handleRegister = async () => {
+    const { username, email, password, phone, altPhone, address, city, salon } = form;
+    if (!username || !email || !password) {
+      setError("Please fill in all required fields.");
       return;
     }
-
-    const salt = bcrypt.genSaltSync(10);
-    const hashedPassword = bcrypt.hashSync(password, salt);
-
-    const users = JSON.parse(localStorage.getItem("users")) || [];
-    const userExists = users.find((u) => u.username === username);
-
-    if (userExists) {
-      alert("Username already taken.");
-      return;
+    try {
+      await register({ username, email, password, phone, altPhone, address, city, salon });
+      navigate("/login");
+    } catch (err) {
+      setError(err.message || "Registration failed");
     }
-
-    users.push({
-      ...form,
-      password: hashedPassword,
-    });
-
-    localStorage.setItem("users", JSON.stringify(users));
-    alert("Registration successful!");
-    navigate("/login");
   };
 
   return (
     <section className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-pink-400 to-purple-500 text-white p-4">
       <h1 className="text-3xl mb-6 font-bold">Register</h1>
       <div className="bg-white text-black p-8 rounded-xl shadow-lg space-y-4 w-full max-w-md">
-        {[
-          { name: "username", placeholder: "Username" },
-          { name: "phone", placeholder: "Phone Number" },
-          { name: "altPhone", placeholder: "Alternate Number" },
-          { name: "email", placeholder: "Email" },
-          { name: "salon", placeholder: "Salon Name" },
-          { name: "address", placeholder: "Address" },
-          { name: "city", placeholder: "City" },
-        ].map(({ name, placeholder }) => (
           <input
-            key={name}
-            name={name}
+          name="username"
             type="text"
-            placeholder={placeholder}
+          placeholder="Username"
+          className="w-full p-2 border rounded"
+          value={form.username}
+          onChange={handleChange}
+        />
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
             className="w-full p-2 border rounded"
-            value={form[name]}
+          value={form.email}
             onChange={handleChange}
           />
-        ))}
-
         <input
           name="password"
           type="password"
@@ -97,7 +63,47 @@ const Register = () => {
           value={form.password}
           onChange={handleChange}
         />
-
+        <input
+          name="phone"
+          type="text"
+          placeholder="Phone Number"
+          className="w-full p-2 border rounded"
+          value={form.phone}
+          onChange={handleChange}
+        />
+        <input
+          name="altPhone"
+          type="text"
+          placeholder="Alternate Phone Number"
+          className="w-full p-2 border rounded"
+          value={form.altPhone}
+          onChange={handleChange}
+        />
+        <input
+          name="address"
+          type="text"
+          placeholder="Address"
+          className="w-full p-2 border rounded"
+          value={form.address}
+          onChange={handleChange}
+        />
+        <input
+          name="city"
+          type="text"
+          placeholder="City"
+          className="w-full p-2 border rounded"
+          value={form.city}
+          onChange={handleChange}
+        />
+        <input
+          name="salon"
+          type="text"
+          placeholder="Salon Name"
+          className="w-full p-2 border rounded"
+          value={form.salon}
+          onChange={handleChange}
+        />
+        {error && <div className="text-red-500 text-sm">{error}</div>}
         <button
           onClick={handleRegister}
           className="w-full bg-black text-white py-2 rounded hover:bg-gray-800 transition"

@@ -1,75 +1,64 @@
 import React from "react";
+import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react";
 
 const Contact = () => {
   return (
-    <section className="relative min-h-screen bg-gray-400 py-16 px-6 md:px-20">
-      {/* Background Decorative Pattern */}
+    <section className="bg-gray-400 min-h-screen pt-28 pb-16 px-4 sm:px-8 lg:px-24">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-10"
         style={{ backgroundImage: "url('/images/general-bg.png')" }}
       ></div>
-
-      <div className="relative z-10 max-w-4xl mt-[50px] mx-auto">
-        <h1 className="text-5xl font-bold text-center text-black mb-4">
-          Get in <span className="text-white">Touch</span>
+      <div className="max-w-6xl mx-auto text-center">
+        <h1 className="text-5xl font-bold text-black mb-4 animate-fade-in">
+          Contact Us
         </h1>
-        <p className="text-center text-gray-900 mb-12">
-          We'd love to hear from you! Whether you have a question about products, pricing, or else, our team is ready to answer.
+        <p className="text-lg text-white mb-12 animate-fade-in delay-100">
+          We’d love to hear from you! Find our details below.
         </p>
 
-        <form className="grid grid-cols-1 gap-6 bg-white rounded-2xl p-8 shadow-xl">
-          <div>
-            <label className="block mb-2 text-gray-700 font-medium">Name</label>
-            <input
-              type="text"
-              placeholder="Your Name"
-              required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        {/* Info Cards */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 animate-fade-in delay-200">
+          <div className="bg-white shadow-xl rounded-3xl p-6 hover:scale-105 transition-transform duration-300">
+            <MapPin className="h-10 w-10 text-blue-600 mb-4 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">Address</h3>
+            <p className="text-gray-600">
+              Shop No. 101-102, First Floor, Angan Residency, Near Gangotri Circle, Nikol, Ahmedabad, Gujarat-382350
+            </p>
           </div>
 
-          <div>
-            <label className="block mb-2 text-gray-700 font-medium">Contact Number</label>
-            <input
-                type="tel"
-                placeholder="Your Number"
-                pattern="[0-9]{10}" // Accepts exactly 10 digits (modify if needed)
-                required
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="bg-white shadow-xl rounded-3xl p-6 hover:scale-105 transition-transform duration-300">
+            <Phone className="h-10 w-10 text-green-600 mb-4 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">Phone</h3>
+            <p className="text-gray-600">Calling : 98799 - 44993</p>
+            <p className="text-gray-600">Whatsapp : 98793 - 49398</p>
+            <p className="text-gray-600">Whatsapp : 98255 - 94529</p>
           </div>
 
-
-          <div>
-            <label className="block mb-2 text-gray-700 font-medium">Email</label>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          <div className="bg-white shadow-xl rounded-3xl p-6 hover:scale-105 transition-transform duration-300">
+            <Mail className="h-10 w-10 text-red-600 mb-4 mx-auto" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">Email</h3>
+            <p className="text-gray-600">shreekrishnabeautyproducts@gmail.com</p>
           </div>
+        </div>
 
-          <div>
-            <label className="block mb-2 text-gray-700 font-medium">Message</label>
-            <textarea
-              rows="5"
-              placeholder="Your message..."
-              required
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            ></textarea>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 bg-black text-white rounded-lg text-lg font-semibold hover:bg-black/40 transition"
+        {/* Social Media */}
+        <div className="flex justify-center gap-6 mb-16 animate-fade-in delay-300">
+          <a
+            href="https://www.facebook.com/dev.patel.329831"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-800 hover:text-blue-500 transition-all"
           >
-            Send Message
-          </button>
-        </form>
-
-        <div className="mt-12 text-center">
-          <p className="text-gray-800">Or reach us directly at</p>
-          <p className="font-semibold text-gray-800">shreekrishnabeautyproducts@gmail.com</p>
+            <Facebook className="h-8 w-8" />
+          </a>
+          <a
+            href="https://www.instagram.com/_shree_krishna_beauty_products"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-pink-500 hover:text-pink-400 transition-all"
+          >
+            <Instagram className="h-8 w-8" />
+          </a>
         </div>
       </div>
     </section>
