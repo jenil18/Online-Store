@@ -34,14 +34,14 @@ export const theme = {
       'slide-in-right': 'slideInRight 3.5s ease forwards',
     },
     keyframes: {
-    gradientMove: {
-      '0%': { backgroundPosition: '0% 50%' },
-      '100%': { backgroundPosition: '200% 50%' },
-    },
-    zoomOutFade: {
-      '0%': { transform: 'scale(1)', opacity: '1' },
-      '100%': { transform: 'scale(1.5)', opacity: '0' },
-    },
+      gradientMove: {
+        '0%': { backgroundPosition: '0% 50%' },
+        '100%': { backgroundPosition: '200% 50%' },
+      },
+      zoomOutFade: {
+        '0%': { transform: 'scale(1)', opacity: '1' },
+        '100%': { transform: 'scale(1.5)', opacity: '0' },
+      },
       fadeInOut: {
         '0%, 100%': {opacity: 0,transform: 'translate(-50%, -20%)',},
         '10%, 90%': {opacity: 1,transform: 'translate(-50%, -50%)',},
