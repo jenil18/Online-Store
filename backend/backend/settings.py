@@ -165,7 +165,11 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS settings for production
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "https://online-store-gamma-mauve.vercel.app",
+]
 
 AUTH_USER_MODEL = 'authentication.User'
 
