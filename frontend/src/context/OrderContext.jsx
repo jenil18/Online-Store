@@ -19,7 +19,7 @@ export const OrderProvider = ({ children }) => {
   const { token } = useAuth();
   const { cartItems } = useCart();
 
-  const API_BASE = 'http://localhost:8000/api/cart';
+  const API_BASE = process.env.REACT_APP_API_URL + "/api/cart";
 
   // Place order for approval
   const placeOrderForApproval = async (discountedTotal = null) => {

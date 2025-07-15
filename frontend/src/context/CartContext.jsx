@@ -10,7 +10,7 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { token, user } = useAuth();
 
-  const API_BASE = 'http://localhost:8000/api';
+  const API_BASE = process.env.REACT_APP_API_URL + "/api";
 
   // Load cart items from localStorage on component mount
   useEffect(() => {

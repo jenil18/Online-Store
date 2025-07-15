@@ -12,6 +12,7 @@ const Login = () => {
   const { login } = useAuth();
   const [forgotMessage, setForgotMessage] = useState("");
   const [showForgot, setShowForgot] = useState(false);
+  const API_BASE = process.env.REACT_APP_API_URL;
 
   const handleLogin = async () => {
     setError("");
@@ -51,7 +52,7 @@ const Login = () => {
       return;
     }
     try {
-      const res = await axios.post("http://localhost:8000/auth/password-reset/", { username });
+      const res = await axios.post(`${API_BASE}/auth/password-reset/`, { username });
       setForgotMessage(res.data.message || "Check your email for password info.");
     } catch (err) {
       setForgotMessage(

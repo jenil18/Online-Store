@@ -16,6 +16,8 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -30,7 +32,7 @@ const ResetPassword = () => {
     }
     setLoading(true);
     try {
-      const res = await axios.post('http://localhost:8000/auth/password-reset-confirm/', {
+      const res = await axios.post(`${API_BASE}/auth/password-reset-confirm/`, {
         uid,
         token,
         new_password: newPassword,

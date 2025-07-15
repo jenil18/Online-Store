@@ -12,11 +12,13 @@ const ProductDetail = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [imageError, setImageError] = useState(false);
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`http://localhost:8000/api/products/${id}/`);
+        const response = await fetch(`${API_BASE}/api/products/${id}/`);
         if (!response.ok) throw new Error('Product not found');
         const data = await response.json();
         setProduct(data);

@@ -21,10 +21,12 @@ const Profile = () => {
     }
   }, [user]);
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   const fetchOrderHistory = async () => {
     setLoadingOrders(true);
     try {
-      const response = await fetch('http://localhost:8000/api/cart/order-history/', {
+      const response = await fetch(`${API_BASE}/api/cart/order-history/`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
