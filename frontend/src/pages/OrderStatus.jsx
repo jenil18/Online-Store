@@ -15,10 +15,30 @@ const OrderStatus = () => {
    const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentError, setPaymentError] = useState("");
   const [paymentResponse, setPaymentResponse] = useState(null);
+  const [orderHistory, setOrderHistory] = useState([]);
+
+  const API_BASE = process.env.REACT_APP_API_URL + "/api/cart";
 
   useEffect(() => {
     getOrderStatus();
+    fetchOrderHistory();
   }, []);
+
+  const fetchOrderHistory = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/order-history/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setOrderHistory(data);
+      }
+    } catch (err) {
+      console.error('Error fetching order history:', err);
+    }
+  };
 
   // Razorpay payment handler
   const handleProceedToCheckout = async () => {
@@ -287,6 +307,21 @@ const OrderStatus = () => {
             </div>
           )}
         </div>
+      </div>
+      <div className="mt-8 bg-gray-50 rounded-lg p-4">
+        <h2 className="text-xl font-bold mb-4 text-pink-600">Order History</h2>
+        {orderHistory.length === 0 ? (
+          <p className="text-gray-600">No past orders found.</p>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {orderHistory.map(order => (
+              <li key={order.id} className="py-2 flex justify-between items-center">
+                <span>Order #{order.id} - Status: <span className="font-semibold">{order.status}</span></span>
+                <span>Total: ₹{order.total}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </section>
   );
