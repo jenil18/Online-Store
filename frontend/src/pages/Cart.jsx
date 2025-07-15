@@ -73,6 +73,8 @@ export default function CartPage() {
     updateQuantity(id, quantity);
   };
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   return (
     <section className="mt-16 min-h-screen bg-gradient-to-r from-pink-400 to-purple-500 py-12 px-4 sm:px-6 md:px-8 lg:px-12">
       <div className="container mx-auto">
@@ -91,7 +93,7 @@ export default function CartPage() {
                   className="flex flex-col sm:flex-row items-center gap-4 p-4 border-b border-gray-200 hover:bg-gray-50 transition-all duration-300 rounded-lg"
                 >
                   <img
-                    src={item.image}
+                    src={item.image && !item.image.startsWith('http') ? `${API_BASE}/media/${item.image}` : item.image}
                     alt={item.name}
                     className="w-20 h-20 object-cover rounded-lg shadow-sm"
                   />

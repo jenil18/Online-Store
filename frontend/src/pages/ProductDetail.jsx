@@ -43,7 +43,7 @@ const ProductDetail = () => {
   if (error || !product) return <div className="min-h-screen flex justify-center items-center">Product Not Found</div>;
 
   // Use the image URL directly from the API response
-  const imageUrl = product.image ? (product.image.startsWith('http') ? product.image : `${API_BASE}${product.image}`) : null;
+  const imageUrl = product.image ? (product.image.startsWith('http') ? product.image : `${API_BASE}/media/${product.image}`) : null;
   
   console.log('Product data:', product);
   console.log('Image URL from API:', product.image);

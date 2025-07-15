@@ -132,7 +132,7 @@ const OrderStatus = () => {
         onSuccess={async (response) => {
           try {
             // Call backend to mark payment as completed
-            const completionResponse = await fetch(`http://localhost:8000/api/cart/orders/${currentOrder.id}/complete-payment/`, {
+            const completionResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/cart/orders/${currentOrder.id}/complete-payment/`, {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${localStorage.getItem('token')}`,

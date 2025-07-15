@@ -8,6 +8,8 @@ const CartPayment = () => {
     0
   );
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   return (
     <section className="mt-40 min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-pink-400 to-purple-500 text-white p-4">
       <div className="bg-white text-black p-8 rounded-2xl shadow-2xl w-full max-w-lg">
@@ -31,7 +33,7 @@ const CartPayment = () => {
                     {cartItems.map((item) => (
                       <tr key={item.id} className="border-b last:border-b-0">
                         <td className="py-2 flex items-center gap-2">
-                          <img src={item.image} alt={item.name} className="w-8 h-8 rounded object-cover" />
+                          <img src={item.image && !item.image.startsWith('http') ? `${API_BASE}/media/${item.image}` : item.image} alt={item.name} className="w-8 h-8 rounded object-cover" />
                           <span>{item.name}</span>
                         </td>
                         <td className="py-2 text-center">{item.quantity}</td>
