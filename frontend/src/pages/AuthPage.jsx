@@ -84,7 +84,7 @@ export default function AuthPage() {
       <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 w-full max-w-md text-center">
         <div className="flex justify-center">
           <img
-            src="/images/logo2c65.svg"
+            src="/Logo2c65.svg"
             alt="Shree Krishna Beauty Products Logo"
             className="h-[90px] w-auto"
           />
