@@ -14,7 +14,7 @@ export default function GenNavbar() {
     >
       <div className="flex items-center space-x-2 ml-2 sm:ml-[30px]">
         <img
-          src="/logo2c65.svg"
+          src="/Logo2c65.svg"
           alt="Shree Krishna Beauty Products Logo"
           className={`h-10 sm:h-[65px] w-auto transition duration-300`}
         />
