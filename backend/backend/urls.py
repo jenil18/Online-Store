@@ -18,13 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
-from rest_framework.routers import DefaultRouter
 from django.conf.urls.static import static
 from django.http import HttpResponse
-from product.views import ReviewViewSet
-
-router = DefaultRouter()
-router.register(r'reviews', ReviewViewSet)
 
 
 urlpatterns = [
