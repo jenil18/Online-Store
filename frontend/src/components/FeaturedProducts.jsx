@@ -41,7 +41,7 @@ const FeaturedProducts = () => {
             <Link to={`/product/${product.id}`} key={product.id} className="group block">
               <div className="overflow-hidden rounded-lg shadow hover:shadow-lg transition">
                 <img
-                  src={product.image}
+                  src={product.image.startsWith('http') ? product.image : `${API_BASE}${product.image}`}
                   alt={product.name}
                   className="w-full h-40 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform"
                 />
