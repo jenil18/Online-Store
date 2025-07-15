@@ -15,11 +15,13 @@ const Shop = () => {
   const [sortOption, setSortOption] = useState('default');
   const [loading, setLoading] = useState(true);
 
+  const API_BASE = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await fetch('http://localhost:8000/api/products/');
+        const response = await fetch(`${API_BASE}/api/products/`);
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
         setProducts(data);

@@ -26,7 +26,8 @@ const OrderStatus = () => {
     setPaymentError("");
     try {
       // 1. Call backend to create Razorpay order
-      const response = await fetch(`http://localhost:8000/api/cart/orders/${currentOrder.id}/razorpay-order/`, {
+      const API_BASE = process.env.REACT_APP_API_URL;
+      const response = await fetch(`${API_BASE}/api/cart/orders/${currentOrder.id}/razorpay-order/`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

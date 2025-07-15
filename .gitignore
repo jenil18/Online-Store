@@ -45,3 +45,18 @@ staticfiles/
 # OS
 .DS_Store
 Thumbs.db 
+
+
+# Ignore Python virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Ignore Python bytecode
+__pycache__/
+*.py[cod]
+
+# Ignore pip environment files
+pip-log.txt
+pip-delete-this-directory.txt 

@@ -1,9 +1,5 @@
 import React from "react";
-<<<<<<< HEAD
-import { Mail, Phone, MapPin, Facebook, Instagram, Twitter } from "lucide-react";
-=======
 import { Mail, Phone, MapPin, Facebook, Instagram } from "lucide-react";
->>>>>>> 0f445ac4ab70776264033e62613ffc3df61857e3
 
 const Contact = () => {
   return (
