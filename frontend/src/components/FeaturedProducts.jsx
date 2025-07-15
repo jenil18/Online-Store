@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const FeaturedProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,6 @@ const FeaturedProducts = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const API_BASE = process.env.REACT_APP_API_URL;
         const response = await fetch(`${API_BASE}/api/products/`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
@@ -41,7 +42,7 @@ const FeaturedProducts = () => {
             <Link to={`/product/${product.id}`} key={product.id} className="group block">
               <div className="overflow-hidden rounded-lg shadow hover:shadow-lg transition">
                 <img
-                  src={product.image}
+                  src={product.image.startsWith('http') ? product.image : `${API_BASE}${product.image}`}
                   alt={product.name}
                   className="w-full h-40 sm:h-56 md:h-64 object-cover group-hover:scale-105 transition-transform"
                 />

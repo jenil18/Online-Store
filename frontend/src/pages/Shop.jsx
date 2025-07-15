@@ -141,7 +141,7 @@ const Shop = () => {
                 >
                   <div className="relative overflow-hidden">
                     <img
-                      src={product.image}
+                      src={product.image.startsWith('http') ? product.image : `${API_BASE}${product.image}`}
                       alt={product.name}
                       className="w-full h-48 sm:h-56 object-cover group-hover:scale-110 transition-transform duration-500"
                     />
