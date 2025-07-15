@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 const FeaturedProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -10,7 +12,6 @@ const FeaturedProducts = () => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const API_BASE = process.env.REACT_APP_API_URL;
         const response = await fetch(`${API_BASE}/api/products/`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
