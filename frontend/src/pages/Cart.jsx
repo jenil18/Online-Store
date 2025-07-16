@@ -93,7 +93,7 @@ export default function CartPage() {
                   className="flex flex-col sm:flex-row items-center gap-4 p-4 border-b border-gray-200 hover:bg-gray-50 transition-all duration-300 rounded-lg"
                 >
                   <img
-                    src={item.image && !item.image.startsWith('http') ? `${API_BASE}/media/${item.image}` : item.image}
+                    src={item.image}
                     alt={item.name}
                     className="w-20 h-20 object-cover rounded-lg shadow-sm"
                   />

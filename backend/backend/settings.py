@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     "authentication",
     "product",
     'cart',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 MIDDLEWARE = [
@@ -174,8 +176,16 @@ CORS_ALLOWED_ORIGINS = [
 
 AUTH_USER_MODEL = 'authentication.User'
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Cloudinary configuration for media files
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': config('CLOUDINARY_API_KEY'),
+    'API_SECRET': config('CLOUDINARY_API_SECRET'),
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+MEDIA_URL = '/media/'  # Cloudinary will handle this
+# MEDIA_ROOT = BASE_DIR / 'media'  # Not needed with Cloudinary
 
 # Email backend for production
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

@@ -33,7 +33,7 @@ const CartPayment = () => {
                     {cartItems.map((item) => (
                       <tr key={item.id} className="border-b last:border-b-0">
                         <td className="py-2 flex items-center gap-2">
-                          <img src={item.image && !item.image.startsWith('http') ? `${API_BASE}/media/${item.image}` : item.image} alt={item.name} className="w-8 h-8 rounded object-cover" />
+                          <img src={item.image} alt={item.name} className="w-8 h-8 rounded object-cover" />
                           <span>{item.name}</span>
                         </td>
                         <td className="py-2 text-center">{item.quantity}</td>
