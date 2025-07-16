@@ -45,6 +45,29 @@ export default function AuthPage() {
           navigate("/");
         }
       } else {
+        // Validation for registration
+        if (!name || !username || !email || !password) {
+          setError("Please fill in all required fields.");
+          setLoading(false);
+          return;
+        }
+        const usernameRegex = /^[A-Za-z][A-Za-z0-9]*$/;
+        if (!usernameRegex.test(username)) {
+          setError("Username must start with a letter and contain only letters and numbers.");
+          setLoading(false);
+          return;
+        }
+        const phoneRegex = /^\d{10}$/;
+        if (!phoneRegex.test(phone)) {
+          setError("Phone must be exactly 10 digits.");
+          setLoading(false);
+          return;
+        }
+        if (altPhone && !phoneRegex.test(altPhone)) {
+          setError("Alternate phone must be exactly 10 digits.");
+          setLoading(false);
+          return;
+        }
         await register({ name, username, password, phone, altPhone, email, salon, address, city });
         navigate("/");
       }
