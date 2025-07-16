@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import axios from 'axios';
 
+const API_BASE = process.env.REACT_APP_API_URL;
+
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState("");
@@ -19,6 +21,7 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const [forgotMessage, setForgotMessage] = useState("");
   const [showForgot, setShowForgot] = useState(false);
+  const [name, setName] = useState("");
 
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -42,7 +45,7 @@ export default function AuthPage() {
           navigate("/");
         }
       } else {
-        await register({ username, password, phone, altPhone, email, salon, address, city });
+        await register({ name, username, password, phone, altPhone, email, salon, address, city });
         navigate("/");
       }
     } catch (err) {
@@ -60,7 +63,7 @@ export default function AuthPage() {
       return;
     }
     try {
-      const res = await axios.post("http://localhost:8000/auth/password-reset/", { username });
+      const res = await axios.post(`${API_BASE}/auth/password-reset/`, { username });
       setForgotMessage(res.data.message || "Check your email for password info.");
     } catch (err) {
       setForgotMessage(
@@ -113,6 +116,15 @@ export default function AuthPage() {
 
           {!isLogin && (
             <>
+              <div>
+                <label className="block mb-1 text-gray-600">Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
+                />
+              </div>
               <div>
                 <label className="block mb-1 text-gray-600">Phone Number</label>
                 <input
