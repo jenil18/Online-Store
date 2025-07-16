@@ -56,7 +56,7 @@ const Register = () => {
   };
 
   return (
-    <section className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-pink-400 to-purple-500 text-white p-4">
+    <section className="mt-16 min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-pink-400 to-purple-500 text-white p-4">
       <h1 className="text-3xl mb-6 font-bold">Register</h1>
       <div className="bg-white text-black p-8 rounded-xl shadow-lg space-y-4 w-full max-w-md">
         <input
