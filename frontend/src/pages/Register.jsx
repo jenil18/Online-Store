@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 
 const Register = () => {
   const [form, setForm] = useState({
+    name: "",
     username: "",
     email: "",
     password: "",
@@ -22,13 +23,32 @@ const Register = () => {
   };
 
   const handleRegister = async () => {
-    const { username, email, password, phone, altPhone, address, city, salon } = form;
-    if (!username || !email || !password) {
+    const { name, username, email, password, phone, altPhone, address, city, salon } = form;
+    if (!name || !username || !email || !password) {
       setError("Please fill in all required fields.");
       return;
     }
+
+    // Username: must start with a letter, only letters and numbers
+    const usernameRegex = /^[A-Za-z][A-Za-z0-9]*$/;
+    if (!usernameRegex.test(username)) {
+      setError("Username must start with a letter and contain only letters and numbers.");
+      return;
+    }
+
+    // Phone and altPhone: only numbers, exactly 10 digits
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+      setError("Phone must be exactly 10 digits.");
+      return;
+    }
+    if (altPhone && !phoneRegex.test(altPhone)) {
+      setError("Alternate phone must be exactly 10 digits.");
+      return;
+    }
+
     try {
-      await register({ username, email, password, phone, altPhone, address, city, salon });
+      await register({ name, username, email, password, phone, altPhone, address, city, salon });
       navigate("/login");
     } catch (err) {
       setError(err.message || "Registration failed");
@@ -39,9 +59,17 @@ const Register = () => {
     <section className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-r from-pink-400 to-purple-500 text-white p-4">
       <h1 className="text-3xl mb-6 font-bold">Register</h1>
       <div className="bg-white text-black p-8 rounded-xl shadow-lg space-y-4 w-full max-w-md">
-          <input
+        <input
+          name="name"
+          type="text"
+          placeholder="Name"
+          className="w-full p-2 border rounded"
+          value={form.name}
+          onChange={handleChange}
+        />
+        <input
           name="username"
-            type="text"
+          type="text"
           placeholder="Username"
           className="w-full p-2 border rounded"
           value={form.username}

@@ -21,8 +21,8 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Register user via backend
-  const register = async ({ username, email, password, phone, altPhone, address, city, salon }) => {
-    const payload = { username, email, password, phone, altPhone, address, city, salon };
+  const register = async ({ name, username, email, password, phone, altPhone, address, city, salon }) => {
+    const payload = { name, username, email, password, phone, altPhone, address, city, salon };
     console.log('Register payload:', payload); // Debug log
     const res = await fetch(`${API_BASE}/register/`, {
       method: "POST",
