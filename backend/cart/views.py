@@ -13,6 +13,7 @@ from rest_framework.decorators import action
 import razorpay
 from django.conf import settings
 from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
 
 # Create your views here.
 
@@ -370,14 +371,18 @@ class PaymentCompletionView(APIView):
                         </div>
                     </div>
                     """
-                    send_mail(
-                        subject='Payment Successful - Shree Krishna Beauty Products',
-                        message=f'Thank you for your purchase! Your order #{order.id} was successful.',
+                    subject = 'Payment Successful - Shree Krishna Beauty Products'
+                    text_content = f'Thank you for your purchase! Your order #{order.id} was successful.'
+                    html_content = html_message  # your existing HTML message
+
+                    email = EmailMultiAlternatives(
+                        subject=subject,
+                        body=text_content,
                         from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[user_email],
-                        fail_silently=True,
-                        html_message=html_message
+                        to=[user_email],
                     )
+                    email.attach_alternative(html_content, "text/html")
+                    email.send(fail_silently=True)
                 
                 # Return the updated order for debugging
                 from .serializers import OrderSerializer
