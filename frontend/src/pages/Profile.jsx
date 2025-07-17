@@ -2,48 +2,24 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Package, DollarSign, Calendar, MapPin } from "lucide-react";
+import { useOrder } from "../context/OrderContext";
 
 const Profile = () => {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
+  const { orderHistory, loadingOrderHistory, getOrderHistory } = useOrder();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableUser, setEditableUser] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [orderHistory, setOrderHistory] = useState([]);
-  const [loadingOrders, setLoadingOrders] = useState(false);
 
   useEffect(() => {
     if (user) {
       setEditableUser(user);
-      fetchOrderHistory();
+      getOrderHistory();
     }
   }, [user]);
-
-  const API_BASE = process.env.REACT_APP_API_URL;
-
-  const fetchOrderHistory = async () => {
-    setLoadingOrders(true);
-    try {
-      const response = await fetch(`${API_BASE}/api/cart/order-history/`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      
-      if (response.ok) {
-        const orders = await response.json();
-        setOrderHistory(orders);
-      } else {
-        console.error('Failed to fetch order history');
-      }
-    } catch (error) {
-      console.error('Error fetching order history:', error);
-    } finally {
-      setLoadingOrders(false);
-    }
-  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -163,7 +139,7 @@ const Profile = () => {
           <div>
             <h2 className="text-2xl font-semibold mb-4 text-gray-800">Order History</h2>
             <div className="space-y-4">
-              {loadingOrders ? (
+              {loadingOrderHistory ? (
                 <div className="text-center py-8">Loading orders...</div>
               ) : orderHistory.length === 0 ? (
                 <div className="text-gray-600 italic">No orders found.</div>

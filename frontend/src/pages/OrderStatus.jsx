@@ -308,21 +308,6 @@ const OrderStatus = () => {
           )}
         </div>
       </div>
-      <div className="mt-8 bg-gray-50 rounded-lg p-4">
-        <h2 className="text-xl font-bold mb-4 text-pink-600">Order History</h2>
-        {orderHistory.length === 0 ? (
-          <p className="text-gray-600">No past orders found.</p>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {orderHistory.map(order => (
-              <li key={order.id} className="py-2 flex justify-between items-center">
-                <span>Order #{order.id} - Status: <span className="font-semibold">{order.status}</span></span>
-                <span>Total: ₹{order.total}</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </section>
   );
 };

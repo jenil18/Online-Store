@@ -387,8 +387,7 @@ class OrderHistoryView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        # Get completed orders for the user, limited to 10 most recent
+        # Get all orders for the user, limited to 20 most recent
         return Order.objects.filter(
-            user=self.request.user, 
-            status='completed'
-        ).order_by('-created_at')[:10]
+            user=self.request.user
+        ).order_by('-created_at')[:20]
