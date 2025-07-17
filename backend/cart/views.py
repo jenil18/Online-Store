@@ -382,6 +382,7 @@ class PaymentCompletionView(APIView):
                         to=[user_email],
                     )
                     email.attach_alternative(html_content, "text/html")
+                    email.encoding = 'utf-8'
                     email.send(fail_silently=True)
                 
                 # Return the updated order for debugging
