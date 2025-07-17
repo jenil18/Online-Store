@@ -17,6 +17,9 @@ from django.core.mail import EmailMultiAlternatives
 
 # Create your views here.
 
+def remove_non_ascii(text):
+    return ''.join(i if ord(i) < 128 else ' ' for i in text)
+
 class CartListCreateView(generics.ListCreateAPIView):
     serializer_class = CartItemSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -374,6 +377,9 @@ class PaymentCompletionView(APIView):
                     subject = 'Payment Successful - Shree Krishna Beauty Products'
                     text_content = f'Thank you for your purchase! Your order #{order.id} was successful.'
                     html_content = html_message.replace('\xa0', ' ')
+                    subject = remove_non_ascii(subject)
+                    text_content = remove_non_ascii(text_content)
+                    html_content = remove_non_ascii(html_content)
 
                     email = EmailMultiAlternatives(
                         subject=subject,
