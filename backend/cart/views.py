@@ -295,16 +295,20 @@ class PaymentCompletionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request, order_id):
+        print(f"[PaymentCompletionView] Called for order_id: {order_id}, user: {request.user}")
         order = get_object_or_404(Order, id=order_id, user=request.user)
+        print(f"[PaymentCompletionView] Found order: {order.id}, status: {order.status}, payment_status: {order.payment_status}")
         
         if order.status != 'approved':
-            return Response({"error": "Order must be approved before payment completion."}, status=status.HTTP_400_BAD_REQUEST)
+            print(f"[PaymentCompletionView] Order status is not 'approved', it is: {order.status}")
+            return Response({"error": f"Order must be approved before payment completion. Current status: {order.status}"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             with transaction.atomic():
                 # Check stock availability one more time before payment completion
                 for cart_item in order.items.all():
                     if cart_item.product.stock < cart_item.quantity:
+                        print(f"[PaymentCompletionView] Insufficient stock for {cart_item.product.name}")
                         return Response({
                             "error": f"Insufficient stock for {cart_item.product.name}. Available: {cart_item.product.stock}, Requested: {cart_item.quantity}"
                         }, status=status.HTTP_400_BAD_REQUEST)
@@ -319,6 +323,7 @@ class PaymentCompletionView(APIView):
                 order.payment_status = 'success'
                 order.transaction_id = request.data.get('razorpay_payment_id', '')
                 order.save()
+                print(f"[PaymentCompletionView] Order updated: status={order.status}, payment_status={order.payment_status}, transaction_id={order.transaction_id}")
 
                 # Send payment success email
                 user_email = order.user.email
@@ -374,12 +379,17 @@ class PaymentCompletionView(APIView):
                         html_message=html_message
                     )
                 
+                # Return the updated order for debugging
+                from .serializers import OrderSerializer
                 return Response({
                     "message": "Payment completed successfully and stock updated",
                     "order_id": order.id,
-                    "status": order.status
+                    "status": order.status,
+                    "payment_status": order.payment_status,
+                    "order": OrderSerializer(order).data
                 })
         except Exception as e:
+            print(f"[PaymentCompletionView] Exception: {str(e)}")
             return Response({"error": f"Failed to complete payment: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class OrderHistoryView(generics.ListAPIView):
