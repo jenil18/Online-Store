@@ -335,7 +335,7 @@ class PaymentCompletionView(APIView):
                     html_message = f"""
                     <div style='font-family:sans-serif;background:#f7fafc;padding:32px;'>
                         <div style='max-width:600px;margin:auto;background:white;border-radius:16px;box-shadow:0 4px 24px #0001;padding:32px;'>
-                            <h1 style='color:#22c55e;text-align:center;font-size:2.5rem;margin-bottom:8px;'>Payment Successful! 🎉</h1>
+                            <h1 style='color:#22c55e;text-align:center;font-size:2.5rem;margin-bottom:8px;'>Payment Successful!</h1>
                             <p style='text-align:center;font-size:1.2rem;color:#555;margin-bottom:24px;'>Thank you for your purchase from <b>Shree Krishna Beauty Products</b>!</p>
                             <div style='background:#e0f7fa;padding:16px 24px;border-radius:12px;margin-bottom:24px;'>
                                 <h2 style='color:#0ea5e9;margin:0 0 8px 0;'>Order #{order.id}</h2>
@@ -365,7 +365,7 @@ class PaymentCompletionView(APIView):
                             </div>
                             <div style='text-align:center;margin-top:32px;'>
                                 <p style='font-size:1.1rem;color:#555;'>We hope you enjoy your products!<br/>If you have any questions, reply to this email.</p>
-                                <p style='font-size:1.5rem;margin-top:16px;'>Thank you for shopping with us! ✨</p>
+                                <p style='font-size:1.5rem;margin-top:16px;'>Thank you for shopping with us!</p>
                             </div>
                         </div>
                     </div>
