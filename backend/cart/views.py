@@ -371,7 +371,7 @@ class PaymentCompletionView(APIView):
                     </div>
                     """
                     send_mail(
-                        subject='🎉 Payment Successful - Shree Krishna Beauty Products',
+                        subject='Payment Successful - Shree Krishna Beauty Products',
                         message=f'Thank you for your purchase! Your order #{order.id} was successful.',
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[user_email],
