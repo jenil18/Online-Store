@@ -373,7 +373,7 @@ class PaymentCompletionView(APIView):
                     """
                     subject = 'Payment Successful - Shree Krishna Beauty Products'
                     text_content = f'Thank you for your purchase! Your order #{order.id} was successful.'
-                    html_content = html_message  # your existing HTML message
+                    html_content = html_message.replace('\xa0', ' ')
 
                     email = EmailMultiAlternatives(
                         subject=subject,
