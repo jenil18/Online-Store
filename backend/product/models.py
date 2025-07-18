@@ -27,4 +27,11 @@ class Product(models.Model):
         if self.image:
             return self.image.url
         return ''
+
+    def save(self, *args, **kwargs):
+        # Auto-calculate discounted_price before saving
+        if self.original_price and self.discount_percent is not None:
+            self.discounted_price = self.original_price - (self.original_price * self.discount_percent / 100)
+            self.price = self.discounted_price  # Optionally keep price in sync
+        super().save(*args, **kwargs)
  
