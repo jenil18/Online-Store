@@ -199,3 +199,8 @@ DEFAULT_FROM_EMAIL = config('EMAIL_HOST_USER')
 # Razorpay Credentials
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET')
+
+AUTHENTICATION_BACKENDS = [
+    'authentication.backends.UsernameOrPhoneBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]

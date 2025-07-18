@@ -7,4 +7,5 @@ class ProductAdmin(admin.ModelAdmin):
     search_fields = ('name', 'category')
     list_filter = ('category',)
     fields = ('name', 'category', 'original_price', 'discount_percent', 'discounted_price', 'price', 'image', 'stock', 'description')
+    readonly_fields = ('discounted_price', 'price')
  
