@@ -45,6 +45,9 @@ class ProfileView(APIView):
 class ForgotPasswordView(APIView):
     permission_classes = [AllowAny]
 
+    def remove_non_ascii(self, text):
+        return ''.join(i if ord(i) < 128 else ' ' for i in str(text))
+
     def post(self, request):
         username = request.data.get('username')
         if not username:
@@ -58,16 +61,19 @@ class ForgotPasswordView(APIView):
         # If you store plain text somewhere (not recommended), use that. Otherwise, you can't send the real password.
         # For demonstration, we will just send the username and a note about password security.
         send_mail(
-            'Your Account Information',
-            f'Username: {user.username}\nPassword: (We do not store plain passwords. Please contact admin to reset your password.)',
-            'aayyusshhpatel000@gmail.com',
-            [user.email],
+            self.remove_non_ascii('Your Account Information'),
+            self.remove_non_ascii(f'Username: {user.username}\nPassword: (We do not store plain passwords. Please contact admin to reset your password.)'),
+            self.remove_non_ascii('aayyusshhpatel000@gmail.com'),
+            [self.remove_non_ascii(user.email)],
             fail_silently=False,
         )
         return Response({'message': 'An email has been sent to your registered email address.'})
 
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
+
+    def remove_non_ascii(self, text):
+        return ''.join(i if ord(i) < 128 else ' ' for i in str(text))
 
     def post(self, request):
         username_or_email = request.data.get('username') or request.data.get('email')
@@ -88,15 +94,14 @@ class PasswordResetRequestView(APIView):
         html_message = f'''
             <p>Click the button below to reset your password:</p>
             <a href="{reset_url}" style="display:inline-block;padding:10px 20px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:5px;">Reset Password</a>
-        
         '''
         send_mail(
-            'Password Reset Request',
-            'Click the link to reset your password: {reset_url}',  # plain text fallback
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
+            self.remove_non_ascii('Password Reset Request'),
+            self.remove_non_ascii(f'Click the link to reset your password: {reset_url}'),
+            self.remove_non_ascii(settings.DEFAULT_FROM_EMAIL),
+            [self.remove_non_ascii(user.email)],
             fail_silently=False,
-            html_message=html_message
+            html_message=self.remove_non_ascii(html_message)
         )
         return Response({'message': 'A password reset link has been sent to your email.'})
 
