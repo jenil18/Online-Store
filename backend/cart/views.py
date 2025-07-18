@@ -332,18 +332,28 @@ class PaymentCompletionView(APIView):
                 # Send payment success email
                 user_email = order.user.email
                 if user_email:
+                    # Sanitize product names and all user-generated fields
+                    def safe(val):
+                        return remove_non_ascii(str(val))
                     item_lines = "".join([
-                        f"<tr><td style='padding:8px;border:1px solid #eee;'>{item.product.name}</td><td style='padding:8px;border:1px solid #eee;'>{item.quantity}</td><td style='padding:8px;border:1px solid #eee;'>₹{item.product.price}</td><td style='padding:8px;border:1px solid #eee;'>₹{item.product.price * item.quantity}</td></tr>"
+                        f"<tr><td style='padding:8px;border:1px solid #eee;'>{safe(item.product.name)}</td><td style='padding:8px;border:1px solid #eee;'>{item.quantity}</td><td style='padding:8px;border:1px solid #eee;'>₹{item.product.price}</td><td style='padding:8px;border:1px solid #eee;'>₹{item.product.price * item.quantity}</td></tr>"
                         for item in order.items.all()
                     ])
+                    order_address = safe(order.address)
+                    order_id = safe(order.id)
+                    order_total = safe(order.total)
+                    shipping_charge = safe(order.shipping_charge or 0)
+                    total_paid = safe(order.total + (order.shipping_charge or 0))
+                    order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
+
                     html_message = f"""
                     <div style='font-family:sans-serif;background:#f7fafc;padding:32px;'>
                         <div style='max-width:600px;margin:auto;background:white;border-radius:16px;box-shadow:0 4px 24px #0001;padding:32px;'>
                             <h1 style='color:#22c55e;text-align:center;font-size:2.5rem;margin-bottom:8px;'>Payment Successful!</h1>
                             <p style='text-align:center;font-size:1.2rem;color:#555;margin-bottom:24px;'>Thank you for your purchase from <b>Shree Krishna Beauty Products</b>!</p>
                             <div style='background:#e0f7fa;padding:16px 24px;border-radius:12px;margin-bottom:24px;'>
-                                <h2 style='color:#0ea5e9;margin:0 0 8px 0;'>Order #{order.id}</h2>
-                                <p style='margin:0;color:#555;'>Placed on: {order.created_at.strftime('%d %b %Y, %I:%M %p')}</p>
+                                <h2 style='color:#0ea5e9;margin:0 0 8px 0;'>Order #{order_id}</h2>
+                                <p style='margin:0;color:#555;'>Placed on: {order_date}
                             </div>
                             <table style='width:100%;border-collapse:collapse;margin-bottom:24px;'>
                                 <thead>
@@ -359,13 +369,13 @@ class PaymentCompletionView(APIView):
                                 </tbody>
                             </table>
                             <div style='margin-bottom:24px;'>
-                                <p style='font-size:1.1rem;'><b>Subtotal:</b> ₹{order.total}</p>
-                                <p style='font-size:1.1rem;'><b>Shipping:</b> ₹{order.shipping_charge or 0}</p>
-                                <p style='font-size:1.3rem;color:#22c55e;'><b>Total Paid:</b> ₹{order.total + (order.shipping_charge or 0)}</p>
+                                <p style='font-size:1.1rem;'><b>Subtotal:</b> ₹{order_total}</p>
+                                <p style='font-size:1.1rem;'><b>Shipping:</b> ₹{shipping_charge}</p>
+                                <p style='font-size:1.3rem;color:#22c55e;'><b>Total Paid:</b> ₹{total_paid}</p>
                             </div>
                             <div style='background:#fef9c3;padding:16px 24px;border-radius:12px;margin-bottom:24px;'>
                                 <h3 style='color:#eab308;margin:0 0 8px 0;'>Delivery Address</h3>
-                                <p style='margin:0;color:#555;'>{order.address}</p>
+                                <p style='margin:0;color:#555;'>{order_address}
                             </div>
                             <div style='text-align:center;margin-top:32px;'>
                                 <p style='font-size:1.1rem;color:#555;'>We hope you enjoy your products!<br/>If you have any questions, reply to this email.</p>
@@ -374,12 +384,9 @@ class PaymentCompletionView(APIView):
                         </div>
                     </div>
                     """
-                    subject = 'Payment Successful - Shree Krishna Beauty Products'
-                    text_content = f'Thank you for your purchase! Your order #{order.id} was successful.'
-                    html_content = html_message.replace('\xa0', ' ')
-                    subject = remove_non_ascii(subject)
-                    text_content = remove_non_ascii(text_content)
-                    html_content = remove_non_ascii(html_content)
+                    subject = safe('Payment Successful - Shree Krishna Beauty Products')
+                    text_content = safe(f'Thank you for your purchase! Your order #{order_id} was successful.')
+                    html_content = safe(html_message.replace('\xa0', ' '))
 
                     email = EmailMultiAlternatives(
                         subject=subject,
