@@ -171,7 +171,7 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
     "https://online-store-gamma-mauve.vercel.app",
-    "https://shreekrishnabeautyproducts.vercel.app/"
+    "https://shreekrishnabeautyproducts.vercel.app/",
     "https://online-store-1ljnkswkh-jenils-projects-0eac3920.vercel.app",
 ]
 
