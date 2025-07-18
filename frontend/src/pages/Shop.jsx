@@ -152,7 +152,13 @@ const Shop = () => {
                       {product.name}
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-500">{product.category} </p>
-                    <p className="text-gray-600 font-bold mt-1 sm:mt-2">&#8377; {product.price}</p>
+                    <div className="flex items-end gap-2 mt-1 sm:mt-2">
+                      <span className="text-pink-600 font-bold text-lg sm:text-xl">-{product.discount_percent}%</span>
+                      <span className="text-black font-extrabold text-xl sm:text-2xl">&#8377; {product.discounted_price}</span>
+                    </div>
+                    <div className="text-gray-500 text-xs sm:text-sm">
+                      M.R.P.: <span className="line-through">&#8377; {product.original_price}</span>
+                    </div>
                   </div>
                 </div>
               ))

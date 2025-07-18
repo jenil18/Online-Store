@@ -72,7 +72,13 @@ const ProductDetail = () => {
         )}
         <div className="space-y-4">
           <h1 className="text-4xl font-bold text-black">{product.name}</h1>
-          <p className="text-2xl font-semibold text-white">&#8377; {product.price}</p>
+          <div className="flex items-end gap-4">
+            <span className="text-pink-600 font-bold text-2xl">-{product.discount_percent}%</span>
+            <span className="text-black font-extrabold text-3xl">&#8377; {product.discounted_price}</span>
+          </div>
+          <div className="text-gray-500 text-base">
+            M.R.P.: <span className="line-through">&#8377; {product.original_price}</span>
+          </div>
           <p className="text-black">{product.description || 'This is a premium cosmetic product crafted for your beauty needs. Enjoy flawless results and gentle care with our formula.'}</p>
 
           <div className="flex flex-wrap gap-4 pt-4">

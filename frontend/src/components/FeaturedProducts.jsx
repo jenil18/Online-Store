@@ -50,7 +50,13 @@ const FeaturedProducts = () => {
               <div className="mt-2 sm:mt-3 text-left">
                 <p className="text-xs text-gray-400 mt-2 sm:mt-4">{product.category}</p>
                 <h3 className="text-sm sm:text-base font-semibold mt-1 sm:mt-2">{product.name}</h3>
-                <p className="text-gray-800 mt-1">&#8377; {product.price}</p>
+                <div className="flex items-end gap-2 mt-1">
+                  <span className="text-pink-600 font-bold text-base">-{product.discount_percent}%</span>
+                  <span className="text-black font-extrabold text-lg">&#8377; {product.discounted_price}</span>
+                </div>
+                <div className="text-gray-500 text-xs">
+                  M.R.P.: <span className="line-through">&#8377; {product.original_price}</span>
+                </div>
               </div>
             </Link>
           ))}
