@@ -114,7 +114,7 @@ const AdminApproval = () => {
   }
 
   return (
-    <section className="mt-6 sm:mt-12 md:mt-16 px-2 sm:px-4 py-4 sm:py-8 bg-gradient-to-r from-pink-400 to-purple-500 text-white p-4">
+    <section className="pt-16 px-2 sm:px-4 py-4 sm:py-8 bg-gradient-to-r from-pink-400 to-purple-500 text-white">
       <div className="bg-white text-black p-8 rounded-2xl shadow-2xl w-full max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
