@@ -15,7 +15,9 @@ const FeaturedProducts = () => {
         const response = await fetch(`${API_BASE}/api/products/`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
-        setProducts(data);
+        // Shuffle products for random display
+        const shuffled = data.sort(() => 0.5 - Math.random());
+        setProducts(shuffled);
       } catch (err) {
         setProducts([]);
       } finally {
@@ -25,7 +27,7 @@ const FeaturedProducts = () => {
     fetchProducts();
   }, []);
 
-  // Show first 4 products as featured
+  // Show 4 random products as featured
   const featured = products.slice(0, 4);
 
   if (loading) return <div>Loading featured products...</div>;
