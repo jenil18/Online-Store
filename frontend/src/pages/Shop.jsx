@@ -53,7 +53,11 @@ const Shop = () => {
     } else if (sortOption === 'name') {
       updatedProducts.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOption === 'default') {
-      updatedProducts.sort((a, b) => a.id - b.id);
+      // Shuffle products randomly for default
+      for (let i = updatedProducts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [updatedProducts[i], updatedProducts[j]] = [updatedProducts[j], updatedProducts[i]];
+      }
     }
     setFilteredProducts(updatedProducts);
   }, [searchTerm, selectedCategory, sortOption, products]);
