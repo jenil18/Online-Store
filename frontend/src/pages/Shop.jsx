@@ -53,10 +53,30 @@ const Shop = () => {
     } else if (sortOption === 'name') {
       updatedProducts.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOption === 'default') {
-      // Shuffle products randomly for default
-      for (let i = updatedProducts.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [updatedProducts[i], updatedProducts[j]] = [updatedProducts[j], updatedProducts[i]];
+      // Persist random order in sessionStorage
+      const storageKey = 'shop_random_order';
+      let storedOrder = null;
+      try {
+        storedOrder = JSON.parse(sessionStorage.getItem(storageKey));
+      } catch (e) {
+        storedOrder = null;
+      }
+      const productIds = updatedProducts.map(p => p.id);
+      // If stored order is valid and matches current products, use it
+      if (
+        storedOrder &&
+        Array.isArray(storedOrder) &&
+        storedOrder.length === productIds.length &&
+        storedOrder.every(id => productIds.includes(id))
+      ) {
+        updatedProducts.sort((a, b) => storedOrder.indexOf(a.id) - storedOrder.indexOf(b.id));
+      } else {
+        // Shuffle and store new order
+        for (let i = updatedProducts.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [updatedProducts[i], updatedProducts[j]] = [updatedProducts[j], updatedProducts[i]];
+        }
+        sessionStorage.setItem(storageKey, JSON.stringify(updatedProducts.map(p => p.id)));
       }
     }
     setFilteredProducts(updatedProducts);
