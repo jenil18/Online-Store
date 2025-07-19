@@ -5,6 +5,11 @@ from django.db import models
 class Product(models.Model):
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=100)
+    BRAND_CHOICES = [
+        ('Orane', 'Orane'),
+        ('Klassy', 'Klassy'),
+    ]
+    brand = models.CharField(max_length=50, choices=BRAND_CHOICES, default='Orane')
     price = models.DecimalField(max_digits=10, decimal_places=2)
     image = models.ImageField(upload_to='products/')
     description = models.TextField(blank=True, null=True)

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Search } from 'lucide-react';
-import { ChevronDown } from 'lucide-react';
+import { Search, ChevronDown } from 'lucide-react';
 import BackToTop from '../components/BackToTop';
+
+const BRANDS = ['Orane', 'Klassy'];
 
 const Shop = () => {
   const navigate = useNavigate();
@@ -11,8 +12,10 @@ const Shop = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState('Orane');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('default');
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const API_BASE = process.env.REACT_APP_API_URL;
@@ -25,27 +28,32 @@ const Shop = () => {
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
         setProducts(data);
-        setFilteredProducts(data);
       } catch (err) {
         setProducts([]);
-        setFilteredProducts([]);
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, []);
+  }, [API_BASE]);
 
   useEffect(() => {
     let updatedProducts = [...products];
+    // Filter by brand
+    if (selectedBrand) {
+      updatedProducts = updatedProducts.filter(product => product.brand === selectedBrand);
+    }
+    // Filter by category
+    if (selectedCategory !== 'All') {
+      updatedProducts = updatedProducts.filter(product => product.category === selectedCategory);
+    }
+    // Filter by search
     if (searchTerm) {
       updatedProducts = updatedProducts.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    if (selectedCategory !== 'All') {
-      updatedProducts = updatedProducts.filter(product => product.category === selectedCategory);
-    }
+    // Sorting logic (unchanged)
     if (sortOption === 'price-low') {
       updatedProducts.sort((a, b) => a.price - b.price);
     } else if (sortOption === 'price-high') {
@@ -53,44 +61,49 @@ const Shop = () => {
     } else if (sortOption === 'name') {
       updatedProducts.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOption === 'default') {
-      // Shuffle only once per session
-      const storageKey = 'shop_random_order';
-      let storedOrder = null;
+      // Shuffle every 12 hours, persist order and timestamp in localStorage
+      const storageKey = 'shop_random_order_v2';
+      let storedData = null;
       try {
-        storedOrder = JSON.parse(sessionStorage.getItem(storageKey));
+        storedData = JSON.parse(localStorage.getItem(storageKey));
       } catch (e) {
-        storedOrder = null;
+        storedData = null;
       }
       const productIds = updatedProducts.map(p => p.id);
-      if (!storedOrder) {
-        // No order stored yet, shuffle and store
+      const now = Date.now();
+      const TWELVE_HOURS = 12 * 60 * 60 * 1000;
+      let shouldReshuffle = true;
+      if (
+        storedData &&
+        Array.isArray(storedData.order) &&
+        typeof storedData.timestamp === 'number' &&
+        storedData.order.length === productIds.length &&
+        storedData.order.every(id => productIds.includes(id)) &&
+        now - storedData.timestamp < TWELVE_HOURS
+      ) {
+        shouldReshuffle = false;
+      }
+      if (shouldReshuffle) {
+        // Reshuffle and store new order and timestamp
         for (let i = updatedProducts.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [updatedProducts[i], updatedProducts[j]] = [updatedProducts[j], updatedProducts[i]];
         }
-        sessionStorage.setItem(storageKey, JSON.stringify(updatedProducts.map(p => p.id)));
+        localStorage.setItem(
+          storageKey,
+          JSON.stringify({ order: updatedProducts.map(p => p.id), timestamp: now })
+        );
       } else {
-        // Use stored order, append new products at the end
-        const ordered = [];
-        const idSet = new Set(productIds);
-        // Add products in stored order if they exist in current list
-        storedOrder.forEach(id => {
-          const prod = updatedProducts.find(p => p.id === id);
-          if (prod) ordered.push(prod);
-        });
-        // Add new products not in stored order
-        updatedProducts.forEach(p => {
-          if (!storedOrder.includes(p.id)) ordered.push(p);
-        });
-        updatedProducts = ordered;
+        // Use stored order
+        updatedProducts.sort((a, b) => storedData.order.indexOf(a.id) - storedData.order.indexOf(b.id));
       }
     }
     setFilteredProducts(updatedProducts);
-  }, [searchTerm, selectedCategory, sortOption, products]);
+  }, [products, searchTerm, selectedCategory, selectedBrand, sortOption]);
 
-  // Unique categories for filters
-  const categories = products && products.length > 0 
-    ? ['All', ...new Set(products.map(product => product.category))]
+  // Unique categories for the selected brand
+  const categories = products && products.length > 0
+    ? ['All', ...Array.from(new Set(products.filter(p => p.brand === selectedBrand).map(product => product.category)))]
     : ['All'];
 
   const handleProductClick = (productId) => {
@@ -101,27 +114,80 @@ const Shop = () => {
     }
   };
 
+  // Responsive: categories as dropdown on mobile, sidebar on desktop
   return (
     <div className="min-h-screen bg-gray-400 py-8 mt-16">
       <div className="container mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-8">
-        {/* Category Sidebar - collapses on mobile */}
+        {/* Brand Selection Block */}
         <div className="w-full md:w-60 lg:w-72 bg-white rounded-xl shadow-lg p-4 md:p-6 mb-4 md:mb-0 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Categories</h2>
-          <ul className="space-y-2 flex md:block flex-wrap gap-2 md:gap-0">
-            {categories.map(category => (
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Brands</h2>
+          <ul className="space-y-2 flex md:block flex-wrap gap-2 md:gap-0 mb-6">
+            {BRANDS.map(brand => (
               <li
-                key={category}
+                key={brand}
                 className={`cursor-pointer p-2 md:p-3 rounded-lg transition-all duration-300 text-center md:text-left min-w-[90px] md:min-w-0 ${
-                  selectedCategory === category
-                    ? 'bg-gray-200 text-gray-800 font-semibold'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                  selectedBrand === brand
+                    ? 'bg-pink-200 text-pink-800 font-semibold'
+                    : 'text-gray-600 hover:bg-pink-100 hover:text-pink-800'
                 }`}
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => {
+                  setSelectedBrand(brand);
+                  setSelectedCategory('All'); // Reset category when brand changes
+                }}
               >
-                {category}
+                {brand}
               </li>
             ))}
           </ul>
+
+          {/* Categories: Dropdown on mobile, sidebar on desktop */}
+          <div className="block md:hidden mb-4">
+            <button
+              className="w-full flex items-center justify-between p-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-700"
+              onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+            >
+              <span>{selectedCategory}</span>
+              <ChevronDown size={18} />
+            </button>
+            {showCategoryDropdown && (
+              <ul className="mt-2 bg-white rounded-lg shadow-lg border border-gray-200">
+                {categories.map(category => (
+                  <li
+                    key={category}
+                    className={`cursor-pointer p-3 rounded-lg transition-all duration-300 ${
+                      selectedCategory === category
+                        ? 'bg-gray-200 text-gray-800 font-semibold'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                    }`}
+                    onClick={() => {
+                      setSelectedCategory(category);
+                      setShowCategoryDropdown(false);
+                    }}
+                  >
+                    {category}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="hidden md:block">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Categories</h2>
+            <ul className="space-y-2">
+              {categories.map(category => (
+                <li
+                  key={category}
+                  className={`cursor-pointer p-2 md:p-3 rounded-lg transition-all duration-300 text-center md:text-left min-w-[90px] md:min-w-0 ${
+                    selectedCategory === category
+                      ? 'bg-gray-200 text-gray-800 font-semibold'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                  }`}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* Main Content */}
