@@ -116,31 +116,31 @@ const Shop = () => {
 
   // Responsive: categories as dropdown on mobile, sidebar on desktop
   return (
-    <div className="min-h-screen bg-gray-400 py-8 mt-16">
-      <div className="container mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-8">
+    <div className="min-h-screen bg-gray-400 py-4 md:py-8 mt-16">
+      <div className="container mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-4 md:gap-8">
         {/* Header: Move to top on mobile, keep in main content on desktop */}
-        <h2 className="block md:hidden text-3xl sm:text-4xl font-bold text-center mb-3 md:mb-6 text-black w-full mt-3 md:mt-2">Our <span className="text-white">Collection</span></h2>
+        <h2 className="block md:hidden text-2xl sm:text-3xl font-bold text-center mb-2 md:mb-6 text-black w-full mt-1 md:mt-2">Our <span className="text-white">Collection</span></h2>
         {/* Brand & Categories Card */}
-        <div className="w-full md:w-60 lg:w-72 bg-gradient-to-br from-white via-pink-50 to-white rounded-3xl shadow-2xl p-3 md:p-8 mb-2 md:mb-0 mt-2 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10 flex flex-col gap-4 md:gap-6 border border-pink-100">
+        <div className="w-full md:w-60 lg:w-72 bg-gradient-to-br from-white via-pink-50 to-white rounded-2xl md:rounded-3xl shadow-xl md:shadow-2xl p-2 md:p-8 mb-1 md:mb-0 mt-1 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10 flex flex-col gap-2 md:gap-6 border border-pink-100">
           {/* Brands */}
           <div>
-            <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-2 md:mb-3 tracking-tight">Brands</h2>
-            <div className="flex gap-2 md:gap-3 justify-center md:justify-start">
+            <h2 className="text-base md:text-xl font-bold text-gray-800 mb-1 md:mb-3 tracking-tight">Brands</h2>
+            <div className="flex gap-1 md:gap-3 justify-center md:justify-start">
               {BRANDS.map((brand, idx) => (
                 <button
                   key={brand}
-                  className={`px-4 md:px-5 py-1.5 md:py-2 rounded-full font-semibold shadow-sm transition-all duration-300 border-2 focus:outline-none focus:ring-2 focus:ring-pink-300 flex items-center gap-2 text-sm md:text-base
+                  className={`px-3 md:px-5 py-1 md:py-2 rounded-full font-semibold shadow-sm transition-all duration-300 border-2 focus:outline-none focus:ring-2 focus:ring-pink-300 flex items-center gap-1 md:gap-2 text-xs md:text-base
                     ${selectedBrand === brand
                       ? 'bg-pink-600 text-white border-pink-600 hover:bg-pink-700 hover:border-pink-700 scale-105'
                       : 'bg-white text-black border-pink-300 hover:bg-pink-50'}
                     ${idx === 0 ? '' : 'ml-0 md:ml-2'}`}
-                  style={{ minWidth: 80 }}
+                  style={{ minWidth: 70 }}
                   onClick={() => {
                     setSelectedBrand(brand);
                     setSelectedCategory('All');
                   }}
                 >
-                  {selectedBrand === brand && <span className="inline-block w-2 h-2 bg-white rounded-full border border-pink-600 animate-pulse"></span>}
+                  {selectedBrand === brand && <span className="inline-block w-1.5 h-1.5 md:w-2 md:h-2 bg-white rounded-full border border-pink-600 animate-pulse"></span>}
                   {brand}
                 </button>
               ))}
@@ -153,21 +153,21 @@ const Shop = () => {
           {/* Categories: Dropdown on mobile, sidebar on desktop */}
           <div className="block md:hidden mb-1">
             <button
-              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-pink-200 bg-pink-50 text-gray-700 font-medium shadow-sm text-sm"
+              className="w-full flex items-center justify-between p-2 rounded-xl border border-pink-200 bg-pink-50 text-gray-700 font-medium shadow-sm text-xs"
               onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
             >
-              <span className="flex items-center gap-2">
-                {selectedCategory !== 'All' && <span className="inline-block w-2 h-2 bg-pink-600 rounded-full"></span>}
+              <span className="flex items-center gap-1">
+                {selectedCategory !== 'All' && <span className="inline-block w-1.5 h-1.5 bg-pink-600 rounded-full"></span>}
                 {selectedCategory}
               </span>
-              <ChevronDown size={18} />
+              <ChevronDown size={16} />
             </button>
             {showCategoryDropdown && (
               <ul className="mt-1 bg-white rounded-xl shadow-lg border border-pink-100">
                 {categories.map(category => (
                   <li
                     key={category}
-                    className={`cursor-pointer p-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 text-sm font-medium
+                    className={`cursor-pointer p-2 rounded-xl transition-all duration-300 flex items-center gap-1 text-xs font-medium
                       ${selectedCategory === category
                         ? 'bg-pink-100 text-pink-700 font-semibold scale-105'
                         : 'text-gray-600 hover:bg-pink-50 hover:text-pink-700'}`}
@@ -176,7 +176,7 @@ const Shop = () => {
                       setShowCategoryDropdown(false);
                     }}
                   >
-                    {selectedCategory === category && <span className="inline-block w-2 h-2 bg-pink-600 rounded-full"></span>}
+                    {selectedCategory === category && <span className="inline-block w-1.5 h-1.5 bg-pink-600 rounded-full"></span>}
                     {category}
                   </li>
                 ))}
@@ -209,14 +209,14 @@ const Shop = () => {
           <h2 className="hidden md:block text-3xl sm:text-4xl font-bold text-center mb-4 text-black">Our <span className="text-white">Collection</span></h2>
 
           {/* Search and Filter Section */}
-          <div className="flex flex-col sm:flex-row sm:justify-between flex-wrap items-center gap-3 md:gap-4 mb-3 md:mb-6 bg-white/50 backdrop-blur-md border border-gray-200 rounded-2xl shadow-md p-3 md:p-6 mt-2 md:mt-0">
+          <div className="flex flex-col sm:flex-row sm:justify-between flex-wrap items-center gap-2 md:gap-4 mb-2 md:mb-6 bg-white/50 backdrop-blur-md border border-gray-200 rounded-xl md:rounded-2xl shadow-md p-2 md:p-6 mt-1 md:mt-0">
             {/* Search Bar */}
             <div className="relative w-full sm:w-auto">
-              <Search className="absolute left-4 top-4 h-5 w-5 text-gray-500" />
+              <Search className="absolute left-3 md:left-4 top-3 md:top-4 h-4 md:h-5 w-4 md:w-5 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search for products..."
-                className="w-full sm:w-80 pl-12 pr-4 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-black outline-none bg-white text-gray-700 placeholder-gray-400 transition-all duration-300 shadow-sm"
+                className="w-full sm:w-80 pl-10 md:pl-12 pr-3 md:pr-4 py-2 md:py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-black outline-none bg-white text-gray-700 placeholder-gray-400 transition-all duration-300 shadow-sm text-sm md:text-base"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -224,7 +224,7 @@ const Shop = () => {
             {/* Sort Dropdown */}
             <div className="relative w-full sm:w-auto sm:ml-auto">
               <select
-                className="w-full sm:w-80 pl-4 pr-10 py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-black outline-none bg-white text-gray-700 placeholder-gray-400 transition-all duration-300 shadow-sm appearance-none"
+                className="w-full sm:w-80 pl-3 md:pl-4 pr-8 md:pr-10 py-2 md:py-3 rounded-full border border-gray-300 focus:ring-2 focus:ring-black outline-none bg-white text-gray-700 placeholder-gray-400 transition-all duration-300 shadow-sm appearance-none text-sm md:text-base"
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value)}
               >
@@ -233,14 +233,14 @@ const Shop = () => {
                 <option value="price-high">Price : High to Low</option>
                 <option value="name">Name : A-Z</option>
               </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                <ChevronDown size={18} />
+              <div className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
+                <ChevronDown size={16} className="md:w-5 md:h-5" />
               </div>
             </div>
           </div>
 
           {/* Product Grid - responsive columns */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
             {loading ? (
               <p className="text-center text-gray-600 col-span-full transition-opacity duration-500">Loading products...</p>
             ) : filteredProducts.length > 0 ? (
