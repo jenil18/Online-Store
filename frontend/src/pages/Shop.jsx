@@ -53,7 +53,7 @@ const Shop = () => {
     } else if (sortOption === 'name') {
       updatedProducts.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOption === 'default') {
-      // Persist random order in sessionStorage
+      // Shuffle only once per session
       const storageKey = 'shop_random_order';
       let storedOrder = null;
       try {
@@ -62,21 +62,27 @@ const Shop = () => {
         storedOrder = null;
       }
       const productIds = updatedProducts.map(p => p.id);
-      // If stored order is valid and matches current products, use it
-      if (
-        storedOrder &&
-        Array.isArray(storedOrder) &&
-        storedOrder.length === productIds.length &&
-        storedOrder.every(id => productIds.includes(id))
-      ) {
-        updatedProducts.sort((a, b) => storedOrder.indexOf(a.id) - storedOrder.indexOf(b.id));
-      } else {
-        // Shuffle and store new order
+      if (!storedOrder) {
+        // No order stored yet, shuffle and store
         for (let i = updatedProducts.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
           [updatedProducts[i], updatedProducts[j]] = [updatedProducts[j], updatedProducts[i]];
         }
         sessionStorage.setItem(storageKey, JSON.stringify(updatedProducts.map(p => p.id)));
+      } else {
+        // Use stored order, append new products at the end
+        const ordered = [];
+        const idSet = new Set(productIds);
+        // Add products in stored order if they exist in current list
+        storedOrder.forEach(id => {
+          const prod = updatedProducts.find(p => p.id === id);
+          if (prod) ordered.push(prod);
+        });
+        // Add new products not in stored order
+        updatedProducts.forEach(p => {
+          if (!storedOrder.includes(p.id)) ordered.push(p);
+        });
+        updatedProducts = ordered;
       }
     }
     setFilteredProducts(updatedProducts);
