@@ -118,52 +118,65 @@ const Shop = () => {
   return (
     <div className="min-h-screen bg-gray-400 py-8 mt-16">
       <div className="container mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-8">
-        {/* Brand Selection Block */}
-        <div className="w-full md:w-60 lg:w-72 bg-white rounded-xl shadow-lg p-4 md:p-6 mb-4 md:mb-0 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Brands</h2>
-          <ul className="space-y-2 flex md:block flex-wrap gap-2 md:gap-0 mb-6">
-            {BRANDS.map(brand => (
-              <li
-                key={brand}
-                className={`cursor-pointer p-2 md:p-3 rounded-lg transition-all duration-300 text-center md:text-left min-w-[90px] md:min-w-0 ${
-                  selectedBrand === brand
-                    ? 'bg-pink-200 text-pink-800 font-semibold'
-                    : 'text-gray-600 hover:bg-pink-100 hover:text-pink-800'
-                }`}
-                onClick={() => {
-                  setSelectedBrand(brand);
-                  setSelectedCategory('All'); // Reset category when brand changes
-                }}
-              >
-                {brand}
-              </li>
-            ))}
-          </ul>
+        {/* Header: Move to top on mobile, keep in main content on desktop */}
+        <h2 className="block md:hidden text-3xl sm:text-4xl font-bold text-center mb-6 text-black w-full mt-2">Our <span className="text-white">Collection</span></h2>
+        {/* Brand & Categories Card */}
+        <div className="w-full md:w-60 lg:w-72 bg-gradient-to-br from-white via-pink-50 to-white rounded-3xl shadow-2xl p-5 md:p-8 mb-4 md:mb-0 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10 flex flex-col gap-6 border border-pink-100">
+          {/* Brands */}
+          <div>
+            <h2 className="text-xl font-bold text-gray-800 mb-3 tracking-tight">Brands</h2>
+            <div className="flex gap-3 justify-center md:justify-start">
+              {BRANDS.map((brand, idx) => (
+                <button
+                  key={brand}
+                  className={`px-5 py-2 rounded-full font-semibold shadow-sm transition-all duration-300 border-2 focus:outline-none focus:ring-2 focus:ring-pink-300 flex items-center gap-2 text-base
+                    ${selectedBrand === brand
+                      ? 'bg-pink-600 text-white border-pink-600 hover:bg-pink-700 hover:border-pink-700 scale-105'
+                      : 'bg-white text-black border-pink-300 hover:bg-pink-50'}
+                    ${idx === 0 ? '' : 'ml-0 md:ml-2'}`}
+                  style={{ minWidth: 110 }}
+                  onClick={() => {
+                    setSelectedBrand(brand);
+                    setSelectedCategory('All');
+                  }}
+                >
+                  {selectedBrand === brand && <span className="inline-block w-2 h-2 bg-white rounded-full border border-pink-600 animate-pulse"></span>}
+                  {brand}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="my-2 border-t border-pink-100" />
 
           {/* Categories: Dropdown on mobile, sidebar on desktop */}
-          <div className="block md:hidden mb-4">
+          <div className="block md:hidden mb-2">
             <button
-              className="w-full flex items-center justify-between p-3 rounded-lg border border-gray-300 bg-gray-50 text-gray-700"
+              className="w-full flex items-center justify-between p-3 rounded-xl border border-pink-200 bg-pink-50 text-gray-700 font-medium shadow-sm"
               onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
             >
-              <span>{selectedCategory}</span>
+              <span className="flex items-center gap-2">
+                {selectedCategory !== 'All' && <span className="inline-block w-2 h-2 bg-pink-600 rounded-full"></span>}
+                {selectedCategory}
+              </span>
               <ChevronDown size={18} />
             </button>
             {showCategoryDropdown && (
-              <ul className="mt-2 bg-white rounded-lg shadow-lg border border-gray-200">
+              <ul className="mt-2 bg-white rounded-xl shadow-lg border border-pink-100">
                 {categories.map(category => (
                   <li
                     key={category}
-                    className={`cursor-pointer p-3 rounded-lg transition-all duration-300 ${
-                      selectedCategory === category
-                        ? 'bg-gray-200 text-gray-800 font-semibold'
-                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                    }`}
+                    className={`cursor-pointer p-3 rounded-xl transition-all duration-300 flex items-center gap-2 text-base font-medium
+                      ${selectedCategory === category
+                        ? 'bg-pink-100 text-pink-700 font-semibold scale-105'
+                        : 'text-gray-600 hover:bg-pink-50 hover:text-pink-700'}`}
                     onClick={() => {
                       setSelectedCategory(category);
                       setShowCategoryDropdown(false);
                     }}
                   >
+                    {selectedCategory === category && <span className="inline-block w-2 h-2 bg-pink-600 rounded-full"></span>}
                     {category}
                   </li>
                 ))}
@@ -171,18 +184,18 @@ const Shop = () => {
             )}
           </div>
           <div className="hidden md:block">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">Categories</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-3 tracking-tight">Categories</h2>
             <ul className="space-y-2">
               {categories.map(category => (
                 <li
                   key={category}
-                  className={`cursor-pointer p-2 md:p-3 rounded-lg transition-all duration-300 text-center md:text-left min-w-[90px] md:min-w-0 ${
-                    selectedCategory === category
-                      ? 'bg-gray-200 text-gray-800 font-semibold'
-                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
-                  }`}
+                  className={`cursor-pointer p-2 md:p-3 rounded-full transition-all duration-300 flex items-center gap-2 text-base font-medium
+                    ${selectedCategory === category
+                      ? 'bg-pink-100 text-pink-700 font-semibold scale-105'
+                      : 'text-gray-600 hover:bg-pink-50 hover:text-pink-700'}`}
                   onClick={() => setSelectedCategory(category)}
                 >
+                  {selectedCategory === category && <span className="inline-block w-2 h-2 bg-pink-600 rounded-full"></span>}
                   {category}
                 </li>
               ))}
@@ -192,8 +205,8 @@ const Shop = () => {
 
         {/* Main Content */}
         <div className="w-full md:w-3/4 md:ml-64 lg:ml-80 pl-0 md:pl-0">
-          {/* Header */}
-           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-6 text-black">Our <span className="text-white">Collection</span></h2>
+          {/* Header: Only show on desktop */}
+          <h2 className="hidden md:block text-3xl sm:text-4xl font-bold text-center mb-6 text-black">Our <span className="text-white">Collection</span></h2>
 
           {/* Search and Filter Section */}
           <div className="flex flex-col sm:flex-row sm:justify-between flex-wrap items-center gap-4 mb-6 bg-white/50 backdrop-blur-md border border-gray-200 rounded-2xl shadow-md p-4 sm:p-6">
