@@ -119,9 +119,9 @@ const Shop = () => {
     <div className="min-h-screen bg-gray-400 py-8 mt-16">
       <div className="container mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-8">
         {/* Header: Move to top on mobile, keep in main content on desktop */}
-        <h2 className="block md:hidden text-3xl sm:text-4xl font-bold text-center mb-6 text-black w-full mt-2">Our <span className="text-white">Collection</span></h2>
+        <h2 className="block md:hidden text-3xl sm:text-4xl font-bold text-center mb-3 md:mb-6 text-black w-full mt-3 md:mt-2">Our <span className="text-white">Collection</span></h2>
         {/* Brand & Categories Card */}
-        <div className="w-full md:w-60 lg:w-72 bg-gradient-to-br from-white via-pink-50 to-white rounded-3xl shadow-2xl p-3 md:p-8 mb-3 md:mb-0 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10 flex flex-col gap-4 md:gap-6 border border-pink-100">
+        <div className="w-full md:w-60 lg:w-72 bg-gradient-to-br from-white via-pink-50 to-white rounded-3xl shadow-2xl p-3 md:p-8 mb-2 md:mb-0 mt-2 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10 flex flex-col gap-4 md:gap-6 border border-pink-100">
           {/* Brands */}
           <div>
             <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-2 md:mb-3 tracking-tight">Brands</h2>
@@ -206,10 +206,10 @@ const Shop = () => {
         {/* Main Content */}
         <div className="w-full md:w-3/4 md:ml-64 lg:ml-80 pl-0 md:pl-0">
           {/* Header: Only show on desktop */}
-          <h2 className="hidden md:block text-3xl sm:text-4xl font-bold text-center mb-6 text-black">Our <span className="text-white">Collection</span></h2>
+          <h2 className="hidden md:block text-3xl sm:text-4xl font-bold text-center mb-4 text-black">Our <span className="text-white">Collection</span></h2>
 
           {/* Search and Filter Section */}
-          <div className="flex flex-col sm:flex-row sm:justify-between flex-wrap items-center gap-4 mb-6 bg-white/50 backdrop-blur-md border border-gray-200 rounded-2xl shadow-md p-4 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between flex-wrap items-center gap-3 md:gap-4 mb-3 md:mb-6 bg-white/50 backdrop-blur-md border border-gray-200 rounded-2xl shadow-md p-3 md:p-6 mt-2 md:mt-0">
             {/* Search Bar */}
             <div className="relative w-full sm:w-auto">
               <Search className="absolute left-4 top-4 h-5 w-5 text-gray-500" />
