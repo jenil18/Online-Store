@@ -52,6 +52,8 @@ const Shop = () => {
       updatedProducts.sort((a, b) => b.price - a.price);
     } else if (sortOption === 'name') {
       updatedProducts.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortOption === 'default') {
+      updatedProducts.sort((a, b) => a.id - b.id);
     }
     setFilteredProducts(updatedProducts);
   }, [searchTerm, selectedCategory, sortOption, products]);
