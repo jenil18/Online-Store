@@ -125,7 +125,7 @@ const Shop = () => {
           {/* Brands */}
           <div>
             <h2 className="text-base md:text-xl font-bold text-gray-800 mb-1 md:mb-3 tracking-tight">Brands</h2>
-            <div className="flex gap-1 md:gap-3 justify-center md:justify-start">
+            <div className="flex gap-3 md:gap-4 justify-center md:justify-start">
               {BRANDS.map((brand, idx) => (
                 <button
                   key={brand}
