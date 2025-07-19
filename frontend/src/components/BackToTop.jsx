@@ -28,18 +28,15 @@ const BackToTop = () => {
 
   return (
     <>
-      {/* Mobile Back to Top Button */}
-      <div className="md:hidden">
-        {isVisible && (
-          <button
-            onClick={scrollToTop}
-            className="fixed bottom-6 right-6 z-50 bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition-all duration-300 transform hover:scale-110 active:scale-95"
-            aria-label="Back to top"
-          >
-            <ChevronUp size={20} />
-          </button>
-        )}
-      </div>
+      {isVisible && (
+        <button
+          onClick={scrollToTop}
+          className="fixed bottom-6 right-6 z-50 bg-black text-white p-3 rounded-full shadow-xl hover:bg-gray-800 transition-all duration-300 transform hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-pink-400"
+          aria-label="Back to top"
+        >
+          <ChevronUp size={24} />
+        </button>
+      )}
     </>
   );
 };

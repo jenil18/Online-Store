@@ -11,6 +11,7 @@ const ProductDetail = () => {
   const [added, setAdded] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   const API_BASE = process.env.REACT_APP_API_URL;
 
@@ -30,6 +31,26 @@ const ProductDetail = () => {
     };
     fetchProduct();
   }, [id]);
+
+  // Fetch related products after product is loaded
+  useEffect(() => {
+    const fetchRelated = async () => {
+      if (!product || !product.category) return;
+      try {
+        const response = await fetch(`${API_BASE}/api/products/`);
+        if (!response.ok) throw new Error('Failed to fetch products');
+        const data = await response.json();
+        // Filter by same category, exclude current product
+        const related = data.filter(
+          (p) => p.category === product.category && p.id !== product.id
+        );
+        setRelatedProducts(related);
+      } catch (err) {
+        setRelatedProducts([]);
+      }
+    };
+    fetchRelated();
+  }, [product, API_BASE]);
 
   const handleAddToCart = async () => {
     addToCart(product);
@@ -101,6 +122,38 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Related Products Section */}
+      {relatedProducts.length > 0 && (
+        <div className="max-w-7xl mx-auto mt-16">
+          <h2 className="text-2xl font-bold mb-6 text-black">Related Products</h2>
+          <div className="flex gap-6 overflow-x-auto pb-4">
+            {relatedProducts.map((rel) => (
+              <Link
+                to={`/product/${rel.id}`}
+                key={rel.id}
+                className="min-w-[220px] bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 flex-shrink-0"
+              >
+                <img
+                  src={rel.image}
+                  alt={rel.name}
+                  className="w-full h-40 object-cover rounded-t-xl"
+                />
+                <div className="p-3">
+                  <h3 className="font-semibold text-gray-800 text-base mb-1">{rel.name}</h3>
+                  <div className="flex items-end gap-2">
+                    <span className="text-pink-600 font-bold text-lg">-{rel.discount_percent}%</span>
+                    <span className="text-black font-extrabold text-xl">&#8377; {rel.discounted_price}</span>
+                  </div>
+                  <div className="text-gray-500 text-xs">
+                    M.R.P.: <span className="line-through">&#8377; {rel.original_price}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 };
