@@ -121,20 +121,20 @@ const Shop = () => {
         {/* Header: Move to top on mobile, keep in main content on desktop */}
         <h2 className="block md:hidden text-3xl sm:text-4xl font-bold text-center mb-6 text-black w-full mt-2">Our <span className="text-white">Collection</span></h2>
         {/* Brand & Categories Card */}
-        <div className="w-full md:w-60 lg:w-72 bg-gradient-to-br from-white via-pink-50 to-white rounded-3xl shadow-2xl p-5 md:p-8 mb-4 md:mb-0 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10 flex flex-col gap-6 border border-pink-100">
+        <div className="w-full md:w-60 lg:w-72 bg-gradient-to-br from-white via-pink-50 to-white rounded-3xl shadow-2xl p-3 md:p-8 mb-3 md:mb-0 md:mt-16 md:fixed top-12 left-0 md:left-4 h-auto md:h-[calc(100vh-3rem-80px)] overflow-y-auto z-10 flex flex-col gap-4 md:gap-6 border border-pink-100">
           {/* Brands */}
           <div>
-            <h2 className="text-xl font-bold text-gray-800 mb-3 tracking-tight">Brands</h2>
-            <div className="flex gap-3 justify-center md:justify-start">
+            <h2 className="text-lg md:text-xl font-bold text-gray-800 mb-2 md:mb-3 tracking-tight">Brands</h2>
+            <div className="flex gap-2 md:gap-3 justify-center md:justify-start">
               {BRANDS.map((brand, idx) => (
                 <button
                   key={brand}
-                  className={`px-5 py-2 rounded-full font-semibold shadow-sm transition-all duration-300 border-2 focus:outline-none focus:ring-2 focus:ring-pink-300 flex items-center gap-2 text-base
+                  className={`px-4 md:px-5 py-1.5 md:py-2 rounded-full font-semibold shadow-sm transition-all duration-300 border-2 focus:outline-none focus:ring-2 focus:ring-pink-300 flex items-center gap-2 text-sm md:text-base
                     ${selectedBrand === brand
                       ? 'bg-pink-600 text-white border-pink-600 hover:bg-pink-700 hover:border-pink-700 scale-105'
                       : 'bg-white text-black border-pink-300 hover:bg-pink-50'}
                     ${idx === 0 ? '' : 'ml-0 md:ml-2'}`}
-                  style={{ minWidth: 110 }}
+                  style={{ minWidth: 80 }}
                   onClick={() => {
                     setSelectedBrand(brand);
                     setSelectedCategory('All');
@@ -148,12 +148,12 @@ const Shop = () => {
           </div>
 
           {/* Divider */}
-          <div className="my-2 border-t border-pink-100" />
+          <div className="my-1 md:my-2 border-t border-pink-100" />
 
           {/* Categories: Dropdown on mobile, sidebar on desktop */}
-          <div className="block md:hidden mb-2">
+          <div className="block md:hidden mb-1">
             <button
-              className="w-full flex items-center justify-between p-3 rounded-xl border border-pink-200 bg-pink-50 text-gray-700 font-medium shadow-sm"
+              className="w-full flex items-center justify-between p-2.5 rounded-xl border border-pink-200 bg-pink-50 text-gray-700 font-medium shadow-sm text-sm"
               onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
             >
               <span className="flex items-center gap-2">
@@ -163,11 +163,11 @@ const Shop = () => {
               <ChevronDown size={18} />
             </button>
             {showCategoryDropdown && (
-              <ul className="mt-2 bg-white rounded-xl shadow-lg border border-pink-100">
+              <ul className="mt-1 bg-white rounded-xl shadow-lg border border-pink-100">
                 {categories.map(category => (
                   <li
                     key={category}
-                    className={`cursor-pointer p-3 rounded-xl transition-all duration-300 flex items-center gap-2 text-base font-medium
+                    className={`cursor-pointer p-2.5 rounded-xl transition-all duration-300 flex items-center gap-2 text-sm font-medium
                       ${selectedCategory === category
                         ? 'bg-pink-100 text-pink-700 font-semibold scale-105'
                         : 'text-gray-600 hover:bg-pink-50 hover:text-pink-700'}`}
