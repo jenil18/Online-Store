@@ -9,4 +9,8 @@ python manage.py collectstatic --no-input
 # Fix database schema by adding missing columns
 python fix_migrations.py
 
-python manage.py migrate 
+# Run migrations
+python manage.py migrate
+
+# Start the application
+gunicorn backend.wsgi:application 
