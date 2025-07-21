@@ -69,16 +69,22 @@ const Shop = () => {
       } catch (e) {
         storedData = null;
       }
+      // Always sort by ID for stable mapping
+      updatedProducts.sort((a, b) => a.id - b.id);
       const productIds = updatedProducts.map(p => p.id);
       const now = Date.now();
       const TWELVE_HOURS = 12 * 60 * 60 * 1000;
       let shouldReshuffle = true;
+      // Compare sets, not order
+      const idsSet = new Set(productIds);
+      const storedSet = storedData && Array.isArray(storedData.order) ? new Set(storedData.order) : null;
       if (
         storedData &&
         Array.isArray(storedData.order) &&
         typeof storedData.timestamp === 'number' &&
         storedData.order.length === productIds.length &&
-        storedData.order.every(id => productIds.includes(id)) &&
+        storedSet &&
+        productIds.every(id => storedSet.has(id)) &&
         now - storedData.timestamp < TWELVE_HOURS
       ) {
         shouldReshuffle = false;
@@ -95,7 +101,8 @@ const Shop = () => {
         );
       } else {
         // Use stored order
-        updatedProducts.sort((a, b) => storedData.order.indexOf(a.id) - storedData.order.indexOf(b.id));
+        const idToProduct = Object.fromEntries(updatedProducts.map(p => [p.id, p]));
+        updatedProducts = storedData.order.map(id => idToProduct[id]).filter(Boolean);
       }
     }
     setFilteredProducts(updatedProducts);
