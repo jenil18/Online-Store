@@ -128,14 +128,14 @@ export default function AuthPage() {
         <form onSubmit={handleSubmit} className="space-y-4 text-left">
           <div>
             <label className="block mb-1 text-gray-600 flex items-center">
-              Username <span className="ml-2 text-xs text-gray-300 font-light">ex : ayush123</span>
+              Username 
             </label>
             <input
               type="text"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="ex : ayush123"
+              placeholder="Ex : User123"
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
             />
           </div>

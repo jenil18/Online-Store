@@ -92,8 +92,18 @@ class PasswordResetRequestView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         reset_url = f"{request.data.get('frontend_url', 'http://localhost:3000')}/reset-password?uid={uid}&token={token}"
         html_message = f'''
-            <p>Click the button below to reset your password:</p>
-            <a href="{reset_url}" style="display:inline-block;padding:10px 20px;background-color:#007bff;color:#fff;text-decoration:none;border-radius:5px;">Reset Password</a>
+            <div style="width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f7f7f7;padding:40px 0;">
+              <div style="max-width:480px;margin:auto;background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,0.08);padding:32px 24px;text-align:center;">
+                <img src='https://shreekrishnabeautyproducts.vercel.app/Logo2c65.svg' alt='Shree Krishna Beauty Products' style='width:80px;margin-bottom:16px;'>
+                <h2 style="color:#d63384;font-size:2rem;margin-bottom:12px;">Password Reset Request</h2>
+                <p style="font-size:1.1rem;color:#333;margin-bottom:18px;">We received a request to reset your password for your Shree Krishna Beauty Products account.</p>
+                <p style="font-size:1rem;color:#555;margin-bottom:24px;">If you did not request a password reset, please ignore this email. Otherwise, click the button below to reset your password. This link is valid for a limited time only.</p>
+                <a href="{reset_url}" style="display:inline-block;padding:14px 32px;background:#d63384;color:#fff;text-decoration:none;font-size:1.1rem;font-weight:bold;border-radius:8px;margin-bottom:18px;">Reset Password</a>
+                <p style="font-size:0.95rem;color:#888;margin-top:24px;">If the button above does not work, copy and paste the following link into your browser:</p>
+                <div style="word-break:break-all;font-size:0.95rem;color:#555;background:#f1f1f1;padding:10px 8px;border-radius:6px;margin:10px 0;">{reset_url}</div>
+                <p style="font-size:0.95rem;color:#888;margin-top:18px;">Thank you,<br/>Shree Krishna Beauty Products Team</p>
+              </div>
+            </div>
         '''
         send_mail(
             self.remove_non_ascii('Password Reset Request'),
