@@ -67,14 +67,21 @@ const Register = () => {
           value={form.name}
           onChange={handleChange}
         />
-        <input
-          name="username"
-          type="text"
-          placeholder="Username"
-          className="w-full p-2 border rounded"
-          value={form.username}
-          onChange={handleChange}
-        />
+        {/* Username field with example */}
+        <div>
+          <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1 flex items-center">
+            Username <span className="ml-2 text-xs text-gray-300 font-light">ex : ayush123</span>
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            placeholder="ex : ayush123"
+            className="w-full p-2 border rounded"
+            value={form.username}
+            onChange={handleChange}
+          />
+        </div>
         <input
           name="email"
           type="email"
