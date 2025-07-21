@@ -37,73 +37,27 @@ const Shop = () => {
     fetchProducts();
   }, [API_BASE]);
 
-  // Helper to get and persist shuffle order for a brand
-  function getShuffledOrderForBrand(productsForBrand, brand) {
-    const storageKey = `shop_random_order_v3_${brand}`;
-    let storedData = null;
-    try {
-      storedData = JSON.parse(localStorage.getItem(storageKey));
-    } catch (e) {
-      storedData = null;
-    }
-    const productIds = productsForBrand.map(p => p.id);
-    const now = Date.now();
-    const TWELVE_HOURS = 12 * 60 * 60 * 1000;
-    let shouldReshuffle = true;
-    const storedSet = storedData && Array.isArray(storedData.order) ? new Set(storedData.order) : null;
-    if (
-      storedData &&
-      Array.isArray(storedData.order) &&
-      typeof storedData.timestamp === 'number' &&
-      storedData.order.length === productIds.length &&
-      storedSet &&
-      productIds.every(id => storedSet.has(id)) &&
-      now - storedData.timestamp < TWELVE_HOURS
-    ) {
-      shouldReshuffle = false;
-    }
-    let order;
-    if (shouldReshuffle) {
-      // Reshuffle and store new order and timestamp
-      order = [...productIds];
-      for (let i = order.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [order[i], order[j]] = [order[j], order[i]];
-      }
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({ order, timestamp: now })
-      );
-    } else {
-      order = storedData.order;
-    }
-    return order;
-  }
+  // Remove getShuffledOrderForBrand and all shuffle logic
 
   useEffect(() => {
     // Always get the full product list for the selected brand
-    const productsForBrand = products.filter(product => product.brand === selectedBrand);
-    // Get or persist the shuffle order for this brand
-    const order = getShuffledOrderForBrand(productsForBrand, selectedBrand);
-    // Map id to product
-    const idToProduct = Object.fromEntries(productsForBrand.map(p => [p.id, p]));
-    // Sort by stored order
-    let orderedProducts = order.map(id => idToProduct[id]).filter(Boolean);
-    // Now apply category, search, and sort filters
+    let productsForBrand = products.filter(product => product.brand === selectedBrand);
+    // Apply category, search, and sort filters
     if (selectedCategory !== 'All') {
-      orderedProducts = orderedProducts.filter(product => product.category === selectedCategory);
+      productsForBrand = productsForBrand.filter(product => product.category === selectedCategory);
     }
     if (searchTerm) {
-      orderedProducts = orderedProducts.filter(product =>
+      productsForBrand = productsForBrand.filter(product =>
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+    let orderedProducts = [...productsForBrand];
     if (sortOption === 'price-low') {
-      orderedProducts = [...orderedProducts].sort((a, b) => a.price - b.price);
+      orderedProducts.sort((a, b) => a.price - b.price);
     } else if (sortOption === 'price-high') {
-      orderedProducts = [...orderedProducts].sort((a, b) => b.price - a.price);
+      orderedProducts.sort((a, b) => b.price - a.price);
     } else if (sortOption === 'name') {
-      orderedProducts = [...orderedProducts].sort((a, b) => a.name.localeCompare(b.name));
+      orderedProducts.sort((a, b) => a.name.localeCompare(b.name));
     }
     setFilteredProducts(orderedProducts);
   }, [products, searchTerm, selectedCategory, selectedBrand, sortOption]);
