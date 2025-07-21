@@ -22,8 +22,8 @@ const AdminApproval = () => {
   useEffect(() => {
     console.log('AdminApproval useEffect triggered');
     loadPendingOrders();
-    // Refresh every 10 seconds
-    const interval = setInterval(loadPendingOrders, 10000);
+    // Refresh every 20 minutes
+    const interval = setInterval(loadPendingOrders, 1200000);
     return () => clearInterval(interval);
   }, []);
 
@@ -308,7 +308,7 @@ const AdminApproval = () => {
         <div className="text-center text-gray-500 text-sm bg-gray-50 rounded-lg p-4">
           <p className="flex items-center justify-center">
             <Clock className="w-4 h-4 mr-2" />
-            Orders will automatically refresh every 10 seconds
+            Orders will automatically refresh every 20 minutes
           </p>
         </div>
 

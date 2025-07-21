@@ -22,6 +22,7 @@ import AdminApproval from './pages/AdminApproval';
 import ResetPassword from './pages/ResetPassword';
 import LoadingBrush from './components/LoadingBrush';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import { ShopProvider } from './context/ShopContext';
 
 export default function App() {
   const [showSplash, setShowSplash] = useState(true);
@@ -39,32 +40,34 @@ export default function App() {
     <AuthProvider>
       <CartProvider>
         <OrderProvider>
-        <BrowserRouter>
-          <ScrollTop />
-            <div className="flex flex-col min-h-screen">
-              <NavLayout />
-              <main className="flex-grow">
-                <Routes>
-                  <Route path='/auth' element={<AuthPage />} />
-                  <Route path="/shop" element={ <Shop /> } />
-                  <Route path='/about' element={ <About /> } />
-                  <Route path='/contact' element={ <Contact /> } />
-                  <Route path='/cart' element={ <Cart /> } />
-                    <Route path='/cart/payment' element={<CartPayment />} />
-                    <Route path='/order-status' element={<ProtectedRoute> <OrderStatus /></ProtectedRoute>} />
-                    <Route path='/admin-approval' element={<ProtectedRoute> <AdminApproval /></ProtectedRoute>} />
-                  <Route path='/profile' element={<ProtectedRoute> <Profile /></ProtectedRoute>} />
-                  <Route path='/product/:id' element={<ProtectedRoute> <ProductDetail /></ProtectedRoute>} />
-                    <Route path='/user-not-found' element={<UserNotFound />} />
-                    <Route path="/reset-password" element={<ResetPassword />} />
-                    <Route path="/payment-success" element={<PaymentSuccessPage />} />
-                    <Route path="/" element={ <Home /> } />
-                    <Route path="/*" element={ <Home /> } />
-                </Routes>
-              </main>
-              <Footer />
-            </div>
-        </BrowserRouter>
+          <ShopProvider>
+            <BrowserRouter>
+              <ScrollTop />
+                <div className="flex flex-col min-h-screen">
+                  <NavLayout />
+                  <main className="flex-grow">
+                    <Routes>
+                      <Route path='/auth' element={<AuthPage />} />
+                      <Route path="/shop" element={ <Shop /> } />
+                      <Route path='/about' element={ <About /> } />
+                      <Route path='/contact' element={ <Contact /> } />
+                      <Route path='/cart' element={ <Cart /> } />
+                        <Route path='/cart/payment' element={<CartPayment />} />
+                        <Route path='/order-status' element={<ProtectedRoute> <OrderStatus /></ProtectedRoute>} />
+                        <Route path='/admin-approval' element={<ProtectedRoute> <AdminApproval /></ProtectedRoute>} />
+                      <Route path='/profile' element={<ProtectedRoute> <Profile /></ProtectedRoute>} />
+                      <Route path='/product/:id' element={<ProtectedRoute> <ProductDetail /></ProtectedRoute>} />
+                        <Route path='/user-not-found' element={<UserNotFound />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
+                        <Route path="/payment-success" element={<PaymentSuccessPage />} />
+                        <Route path="/" element={ <Home /> } />
+                        <Route path="/*" element={ <Home /> } />
+                    </Routes>
+                  </main>
+                  <Footer />
+                </div>
+            </BrowserRouter>
+          </ShopProvider>
         </OrderProvider>
       </CartProvider>
     </AuthProvider>
