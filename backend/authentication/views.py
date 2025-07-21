@@ -63,7 +63,7 @@ class ForgotPasswordView(APIView):
         send_mail(
             self.remove_non_ascii('Your Account Information'),
             self.remove_non_ascii(f'Username: {user.username}\nPassword: (We do not store plain passwords. Please contact admin to reset your password.)'),
-            self.remove_non_ascii('aayyusshhpatel000@gmail.com'),
+            self.remove_non_ascii('shreekrishnabeautyproducts@gmail.com'),
             [self.remove_non_ascii(user.email)],
             fail_silently=False,
         )
