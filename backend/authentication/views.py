@@ -90,12 +90,17 @@ class PasswordResetRequestView(APIView):
             return Response({'error': 'No email address found for this user.'}, status=status.HTTP_400_BAD_REQUEST)
         token = PasswordResetTokenGenerator().make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        reset_url = f"{request.data.get('frontend_url', 'http://localhost:3000')}/reset-password?uid={uid}&token={token}"
+        # Use the production frontend URL
+        reset_url = f"https://shreekrishnabeautyproducts.vercel.app/reset-password?uid={uid}&token={token}"
+        
+        # Use logo from frontend
+        logo_url = "https://shreekrishnabeautyproducts.vercel.app/Logo2c65.svg"
+        
         html_message = f'''
             <div style="width:100%;min-height:100vh;background:linear-gradient(135deg, #f8e4ff 0%, #ffd1e8 100%);padding:40px 20px;font-family:Arial,sans-serif;">
               <div style="max-width:480px;margin:auto;background:linear-gradient(180deg, #ffffff 0%, #fefefe 100%);border-radius:24px;box-shadow:0 12px 40px rgba(214,51,132,0.15);padding:40px 24px;text-align:center;border:1px solid rgba(214,51,132,0.1);">
                 <div style="background:linear-gradient(135deg, #ff80b5 0%, #d63384 100%);width:90px;height:90px;margin:0 auto 24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(214,51,132,0.2);">
-                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MDAgNTAwIj48cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJNMjUwIDQ2LjRjLTExMi4zIDAtMjAzLjYgOTEuMy0yMDMuNiAyMDMuNlMxMzcuNyA0NTMuNiAyNTAgNDUzLjZjMTEyLjMgMCAyMDMuNi05MS4zIDIwMy42LTIwMy42UzM2Mi4zIDQ2LjQgMjUwIDQ2LjR6bTAgMzcyLjljLTkzLjkgMC0xNjkuMy03NS40LTE2OS4zLTE2OS4zczc1LjQtMTY5LjMgMTY5LjMtMTY5LjMgMTY5LjMgNzUuNCAxNjkuMyAxNjkuM1MzNDMuOSA0MTkuMyAyNTAgNDE5LjN6Ii8+PHBhdGggZmlsbD0iI2ZmZmZmZiIgZD0iTTI1MCAyMTkuMWMtMTcuMSAwLTMwLjkgMTMuOC0zMC45IDMwLjlzMTMuOCAzMC45IDMwLjkgMzAuOSAzMC45LTEzLjggMzAuOS0zMC45LTEzLjgtMzAuOS0zMC45LTMwLjl6bTAgNDYuNGMtOC42IDAtMTUuNS03LTE1LjUtMTUuNXM3LTE1LjUgMTUuNS0xNS41IDE1LjUgNyAxNS41IDE1LjUtNi45IDE1LjUtMTUuNSAxNS41eiIvPjwvc3ZnPg==" alt="Shree Krishna Beauty Products" style="width:50px;">
+                  <img src="{logo_url}" alt="Shree Krishna Beauty Products" style="width:60px;height:60px;object-fit:contain;filter:brightness(0) invert(1);">
                 </div>
                 <div style="background:linear-gradient(135deg, #fff5f9 0%, #fff 100%);border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid rgba(214,51,132,0.1);">
                   <h2 style="color:#d63384;font-size:28px;margin:0 0 16px;font-weight:700;text-shadow:0 2px 4px rgba(214,51,132,0.1);">Password Reset Request</h2>
