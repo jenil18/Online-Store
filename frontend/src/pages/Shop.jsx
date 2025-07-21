@@ -53,7 +53,7 @@ const Shop = () => {
         product.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-    // Sorting logic (unchanged)
+    // Sorting logic (unchanged except for default random order)
     if (sortOption === 'price-low') {
       updatedProducts.sort((a, b) => a.price - b.price);
     } else if (sortOption === 'price-high') {
@@ -61,8 +61,8 @@ const Shop = () => {
     } else if (sortOption === 'name') {
       updatedProducts.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOption === 'default') {
-      // Shuffle every 12 hours, persist order and timestamp in localStorage
-      const storageKey = 'shop_random_order_v2';
+      // Shuffle every 12 hours, persist order and timestamp in localStorage per brand
+      const storageKey = `shop_random_order_v2_${selectedBrand}`;
       let storedData = null;
       try {
         storedData = JSON.parse(localStorage.getItem(storageKey));
