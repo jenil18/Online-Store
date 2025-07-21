@@ -92,16 +92,23 @@ class PasswordResetRequestView(APIView):
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         reset_url = f"{request.data.get('frontend_url', 'http://localhost:3000')}/reset-password?uid={uid}&token={token}"
         html_message = f'''
-            <div style="width:100%;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f7f7f7;padding:40px 0;">
-              <div style="max-width:480px;margin:auto;background:#fff;border-radius:16px;box-shadow:0 2px 16px rgba(0,0,0,0.08);padding:32px 24px;text-align:center;">
-                <img src='https://shreekrishnabeautyproducts.vercel.app/Logo2c65.svg' alt='Shree Krishna Beauty Products' style='width:80px;margin-bottom:16px;'>
-                <h2 style="color:#d63384;font-size:2rem;margin-bottom:12px;">Password Reset Request</h2>
-                <p style="font-size:1.1rem;color:#333;margin-bottom:18px;">We received a request to reset your password for your Shree Krishna Beauty Products account.</p>
-                <p style="font-size:1rem;color:#555;margin-bottom:24px;">If you did not request a password reset, please ignore this email. Otherwise, click the button below to reset your password. This link is valid for a limited time only.</p>
-                <a href="{reset_url}" style="display:inline-block;padding:14px 32px;background:#d63384;color:#fff;text-decoration:none;font-size:1.1rem;font-weight:bold;border-radius:8px;margin-bottom:18px;">Reset Password</a>
-                <p style="font-size:0.95rem;color:#888;margin-top:24px;">If the button above does not work, copy and paste the following link into your browser:</p>
-                <div style="word-break:break-all;font-size:0.95rem;color:#555;background:#f1f1f1;padding:10px 8px;border-radius:6px;margin:10px 0;">{reset_url}</div>
-                <p style="font-size:0.95rem;color:#888;margin-top:18px;">Thank you,<br/>Shree Krishna Beauty Products Team</p>
+            <div style="width:100%;min-height:100vh;background:linear-gradient(135deg, #f8e4ff 0%, #ffd1e8 100%);padding:40px 20px;font-family:Arial,sans-serif;">
+              <div style="max-width:480px;margin:auto;background:linear-gradient(180deg, #ffffff 0%, #fefefe 100%);border-radius:24px;box-shadow:0 12px 40px rgba(214,51,132,0.15);padding:40px 24px;text-align:center;border:1px solid rgba(214,51,132,0.1);">
+                <div style="background:linear-gradient(135deg, #ff80b5 0%, #d63384 100%);width:90px;height:90px;margin:0 auto 24px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 16px rgba(214,51,132,0.2);">
+                  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MDAgNTAwIj48cGF0aCBmaWxsPSIjZmZmZmZmIiBkPSJNMjUwIDQ2LjRjLTExMi4zIDAtMjAzLjYgOTEuMy0yMDMuNiAyMDMuNlMxMzcuNyA0NTMuNiAyNTAgNDUzLjZjMTEyLjMgMCAyMDMuNi05MS4zIDIwMy42LTIwMy42UzM2Mi4zIDQ2LjQgMjUwIDQ2LjR6bTAgMzcyLjljLTkzLjkgMC0xNjkuMy03NS40LTE2OS4zLTE2OS4zczc1LjQtMTY5LjMgMTY5LjMtMTY5LjMgMTY5LjMgNzUuNCAxNjkuMyAxNjkuM1MzNDMuOSA0MTkuMyAyNTAgNDE5LjN6Ii8+PHBhdGggZmlsbD0iI2ZmZmZmZiIgZD0iTTI1MCAyMTkuMWMtMTcuMSAwLTMwLjkgMTMuOC0zMC45IDMwLjlzMTMuOCAzMC45IDMwLjkgMzAuOSAzMC45LTEzLjggMzAuOS0zMC45LTEzLjgtMzAuOS0zMC45LTMwLjl6bTAgNDYuNGMtOC42IDAtMTUuNS03LTE1LjUtMTUuNXM3LTE1LjUgMTUuNS0xNS41IDE1LjUgNyAxNS41IDE1LjUtNi45IDE1LjUtMTUuNSAxNS41eiIvPjwvc3ZnPg==" alt="Shree Krishna Beauty Products" style="width:50px;">
+                </div>
+                <div style="background:linear-gradient(135deg, #fff5f9 0%, #fff 100%);border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid rgba(214,51,132,0.1);">
+                  <h2 style="color:#d63384;font-size:28px;margin:0 0 16px;font-weight:700;text-shadow:0 2px 4px rgba(214,51,132,0.1);">Password Reset Request</h2>
+                  <p style="font-size:16px;color:#333;margin:0 0 16px;line-height:1.6;">We received a request to reset your password for your <span style="color:#d63384;font-weight:600;">Shree Krishna Beauty Products</span> account.</p>
+                  <p style="font-size:15px;color:#666;margin:0 0 24px;line-height:1.5;">If you did not request a password reset, please ignore this email. Otherwise, click the button below to reset your password.</p>
+                </div>
+                <a href="{reset_url}" style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg, #ff80b5 0%, #d63384 100%);color:#fff;text-decoration:none;font-size:16px;font-weight:600;border-radius:12px;margin-bottom:24px;box-shadow:0 4px 12px rgba(214,51,132,0.3);transition:all 0.3s ease;border:none;cursor:pointer;">Reset Password</a>
+                <div style="background:linear-gradient(135deg, #fff5f9 0%, #fff 100%);border-radius:12px;padding:16px;margin-top:24px;border:1px solid rgba(214,51,132,0.1);">
+                  <p style="font-size:14px;color:#666;margin:0;line-height:1.6;">Thank you,<br/><span style="color:#d63384;font-weight:600;">Shree Krishna Beauty Products Team</span></p>
+                </div>
+                <div style="margin-top:24px;padding-top:24px;border-top:1px solid rgba(214,51,132,0.1);">
+                  <p style="font-size:12px;color:#888;margin:0;line-height:1.5;">This is an automated message, please do not reply to this email.<br/>Link is valid for a limited time only.</p>
+                </div>
               </div>
             </div>
         '''
