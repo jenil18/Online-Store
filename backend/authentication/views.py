@@ -93,15 +93,9 @@ class PasswordResetRequestView(APIView):
         # Use the production frontend URL
         reset_url = f"https://shreekrishnabeautyproducts.vercel.app/reset-password?uid={uid}&token={token}"
         
-        # Use logo from frontend
-        logo_url = "https://shreekrishnabeautyproducts.vercel.app/Logo2c65.svg"
-        
         html_message = f'''
             <div style="width:100%;background:linear-gradient(135deg, #f8e4ff 0%, #ffd1e8 100%);padding:40px 20px;font-family:Arial,sans-serif;">
               <div style="max-width:480px;margin:auto;background:white;border-radius:16px;padding:32px;box-shadow:0 4px 16px rgba(0,0,0,0.1);">
-                <div style="text-align:center;margin-bottom:32px;">
-                  <img src="{logo_url}" alt="SK Beauty Logo" style="width:120px;height:auto;margin:0 auto;">
-                </div>
                 <div style="background:linear-gradient(135deg, #fff5f9 0%, #fff 100%);border-radius:16px;padding:24px;margin-bottom:24px;border:1px solid rgba(214,51,132,0.1);">
                   <h2 style="color:#d63384;font-size:28px;margin:0 0 16px;font-weight:700;text-align:center;">Password Reset Request</h2>
                   <p style="font-size:16px;color:#333;margin:0 0 16px;line-height:1.6;">We received a request to reset your password for your <span style="color:#d63384;font-weight:600;">SK Beauty</span> account.</p>
