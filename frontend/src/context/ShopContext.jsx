@@ -26,7 +26,9 @@ export const ShopProvider = ({ children }) => {
 
 const getOrSetRandomOrder = (productsForBrand, brand) => {
   const storageKey = SHOP_ORDER_KEY_PREFIX + brand;
-  const productIds = productsForBrand.map(p => p.id).sort().join(',');
+  // Always sort IDs before joining to make productIds order-insensitive
+  const sortedIds = productsForBrand.map(p => p.id).sort((a, b) => a - b);
+  const productIds = sortedIds.join(',');
   const now = Date.now();
 
   // ✅ Step 1: Use in-memory cache if valid
@@ -59,7 +61,7 @@ const getOrSetRandomOrder = (productsForBrand, brand) => {
   let order;
   if (shouldReshuffle) {
     // ✅ Generate new shuffled order
-    order = productsForBrand.map(p => p.id);
+    order = sortedIds.slice(); // Use sortedIds to ensure order matches productIds
     for (let i = order.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [order[i], order[j]] = [order[j], order[i]];

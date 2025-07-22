@@ -18,7 +18,7 @@ const Shop = () => {
   const [sortOption, setSortOption] = useState('default');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  
   const API_BASE = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const Shop = () => {
     }
   };
 
-  
+
   // Responsive: categories as dropdown on mobile, sidebar on desktop
   return (
     <div className="min-h-screen bg-gray-400 py-4 md:py-8 mt-16">
