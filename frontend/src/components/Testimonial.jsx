@@ -29,6 +29,9 @@ const Testimonial = () => {
           </div>
         </div>
       </div>
+      <div style={{ position: 'absolute', right: 0, bottom: 0, padding: '8px', zIndex: 10 }} className="text-xs text-gray-400 select-none pointer-events-none">
+        PC : makeupbyseemasaini/IG
+      </div>
     </section>
   );
 };

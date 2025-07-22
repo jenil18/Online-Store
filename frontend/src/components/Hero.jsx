@@ -34,6 +34,9 @@ export default function Hero() {
           View More
         </a>
       </div>
+      <div style={{ position: 'absolute', right: 0, bottom: 0, padding: '8px', zIndex: 10 }} className="text-xs text-gray-400 select-none pointer-events-none">
+        PC : oranebeauty19/IG
+      </div>
     </section>
   );
 }
