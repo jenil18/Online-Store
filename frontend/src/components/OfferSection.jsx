@@ -36,7 +36,7 @@ const OfferSection = () => {
         {/* Right - Image */}
         <div className="relative z-10">
           <img
-            src="/images/product-1.png" // Replace with your actual product image path
+            src="/images/offer_poster.png"
             alt="Special Offer"
             className="w-full max-w-md mx-auto rounded-3xl shadow-2xl animate-slide-in-right"
           />

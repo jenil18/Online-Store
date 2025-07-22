@@ -5,7 +5,7 @@ const SpecialProduct = () => {
         {/* Left Image */}
         <div>
           <img
-            src="/images/specialpic.png" // Add this image in your public/images folder
+            src="/images/newly_arrived.png" 
             alt="Special Product"
             className="rounded-lg shadow-lg w-full"
           />
