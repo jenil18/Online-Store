@@ -6,6 +6,7 @@ import { Search, ChevronDown } from 'lucide-react';
 import BackToTop from '../components/BackToTop';
 import { useSelector, useDispatch } from 'react-redux';
 import { setOrder, ORDER_EXPIRY_MS } from '../shopOrderSlice';
+import { fetchProducts } from '../productsSlice';
 
 const BRANDS = ['Orane', 'Klassy'];
 
@@ -15,32 +16,23 @@ const Shop = () => {
   const { selectedBrand, setSelectedBrand } = useShop();
   const dispatch = useDispatch();
   const shopOrder = useSelector(state => state.shopOrder.orders[selectedBrand]);
+  const products = useSelector(state => state.products.products);
+  const loading = useSelector(state => state.products.loading);
+  const error = useSelector(state => state.products.error);
   const [searchTerm, setSearchTerm] = useState('');
-  const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOption, setSortOption] = useState('default');
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [loading, setLoading] = useState(true);
   
   const API_BASE = process.env.REACT_APP_API_URL;
 
+  // Only fetch products if not already loaded
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`${API_BASE}/api/products/`);
-        if (!response.ok) throw new Error('Failed to fetch products');
-        const data = await response.json();
-        setProducts(data);
-      } catch (err) {
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [API_BASE]);
+    if (!products || products.length === 0) {
+      dispatch(fetchProducts(API_BASE));
+    }
+  }, [dispatch, API_BASE, products]);
 
   useEffect(() => {
     const productsForBrand = products.filter(product => product.brand === selectedBrand);

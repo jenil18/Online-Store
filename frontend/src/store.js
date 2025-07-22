@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit';
 import shopOrderReducer from './shopOrderSlice';
+import productsReducer from './productsSlice';
 
 // LocalStorage persistence helpers
 const SHOP_ORDER_STORAGE_KEY = 'shopOrderReduxState';
@@ -26,6 +27,7 @@ function saveShopOrderState(state) {
 const store = configureStore({
   reducer: {
     shopOrder: shopOrderReducer,
+    products: productsReducer,
   },
   preloadedState: loadShopOrderState(),
 });
