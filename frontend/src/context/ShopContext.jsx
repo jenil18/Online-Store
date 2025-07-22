@@ -26,21 +26,11 @@ export const ShopProvider = ({ children }) => {
 
 const getOrSetRandomOrder = (productsForBrand, brand) => {
   const storageKey = SHOP_ORDER_KEY_PREFIX + brand;
-  // Always sort IDs before joining to make productIds order-insensitive
   const sortedIds = productsForBrand.map(p => p.id).sort((a, b) => a - b);
   const productIds = sortedIds.join(',');
   const now = Date.now();
 
-  // ✅ Step 1: Use in-memory cache if valid
-  if (
-    inMemoryOrderCache.current[brand] &&
-    inMemoryOrderCache.current[brand].productIds === productIds &&
-    now - inMemoryOrderCache.current[brand].timestamp < TWELVE_HOURS
-  ) {
-    return inMemoryOrderCache.current[brand].order;
-  }
-
-  // ✅ Step 2: Try loading from localStorage
+  // Always check localStorage first
   let storedData = null;
   try {
     storedData = JSON.parse(localStorage.getItem(storageKey));
@@ -60,18 +50,18 @@ const getOrSetRandomOrder = (productsForBrand, brand) => {
 
   let order;
   if (shouldReshuffle) {
-    // ✅ Generate new shuffled order
-    order = sortedIds.slice(); // Use sortedIds to ensure order matches productIds
+    // Generate new shuffled order
+    order = sortedIds.slice();
     for (let i = order.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [order[i], order[j]] = [order[j], order[i]];
     }
     const newData = { order, timestamp: now, productIds };
     localStorage.setItem(storageKey, JSON.stringify(newData));
-    inMemoryOrderCache.current[brand] = newData; // ✅ Store in cache
+    inMemoryOrderCache.current[brand] = newData;
   } else {
     order = storedData.order;
-    inMemoryOrderCache.current[brand] = storedData; // ✅ Sync to cache
+    inMemoryOrderCache.current[brand] = storedData;
   }
 
   return order;
