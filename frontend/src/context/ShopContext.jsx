@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 const SHOP_BRAND_KEY = 'shop_selected_brand_v2';
 const SHOP_ORDER_KEY_PREFIX = 'shop_random_order_v4_';
@@ -15,29 +15,38 @@ export const useShop = () => {
 };
 
 export const ShopProvider = ({ children }) => {
-  // Get initial brand from localStorage
   const [selectedBrand, setSelectedBrand] = useState(() => {
     return localStorage.getItem(SHOP_BRAND_KEY) || 'Orane';
   });
 
-  // Persist selected brand
+  const inMemoryOrderCache = useRef({}); // <--- New: holds cached orders while app is open
+
   useEffect(() => {
     localStorage.setItem(SHOP_BRAND_KEY, selectedBrand);
   }, [selectedBrand]);
 
-  // Always check localStorage for order, never rely on in-memory cache
   const getOrSetRandomOrder = (productsForBrand, brand) => {
     const storageKey = SHOP_ORDER_KEY_PREFIX + brand;
+    const productIds = productsForBrand.map(p => p.id).sort().join(',');
+    const now = Date.now();
+
+    // Check in-memory cache first
+    if (
+      inMemoryOrderCache.current[brand] &&
+      inMemoryOrderCache.current[brand].productIds === productIds &&
+      now - inMemoryOrderCache.current[brand].timestamp < TWELVE_HOURS
+    ) {
+      return inMemoryOrderCache.current[brand].order;
+    }
+
     let storedData = null;
     try {
       storedData = JSON.parse(localStorage.getItem(storageKey));
     } catch (e) {
       storedData = null;
     }
-    const productIds = productsForBrand.map(p => p.id).sort().join(',');
-    const now = Date.now();
-    let shouldReshuffle = true;
 
+    let shouldReshuffle = true;
     if (
       storedData &&
       Array.isArray(storedData.order) &&
@@ -54,10 +63,14 @@ export const ShopProvider = ({ children }) => {
         const j = Math.floor(Math.random() * (i + 1));
         [order[i], order[j]] = [order[j], order[i]];
       }
-      localStorage.setItem(storageKey, JSON.stringify({ order, timestamp: now, productIds }));
+      const newData = { order, timestamp: now, productIds };
+      localStorage.setItem(storageKey, JSON.stringify(newData));
+      inMemoryOrderCache.current[brand] = newData; // update cache
     } else {
       order = storedData.order;
+      inMemoryOrderCache.current[brand] = storedData; // sync to cache
     }
+
     return order;
   };
 
@@ -72,4 +85,4 @@ export const ShopProvider = ({ children }) => {
       {children}
     </ShopContext.Provider>
   );
-}; 
+};

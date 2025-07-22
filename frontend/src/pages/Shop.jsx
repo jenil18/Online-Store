@@ -39,19 +39,11 @@ const Shop = () => {
   }, [API_BASE]);
 
   useEffect(() => {
-    // Get the full product list for the selected brand
     const productsForBrand = products.filter(product => product.brand === selectedBrand);
-    
-    // Get the persistent random order for this brand
     const order = getOrSetRandomOrder(productsForBrand, selectedBrand);
-    
-    // Map id to product
     const idToProduct = Object.fromEntries(productsForBrand.map(p => [p.id, p]));
-    
-    // Sort by stored order
     let orderedProducts = order.map(id => idToProduct[id]).filter(Boolean);
-    
-    // Apply filters
+
     if (selectedCategory !== 'All') {
       orderedProducts = orderedProducts.filter(product => product.category === selectedCategory);
     }
@@ -67,10 +59,10 @@ const Shop = () => {
     } else if (sortOption === 'name') {
       orderedProducts = [...orderedProducts].sort((a, b) => a.name.localeCompare(b.name));
     }
-    setFilteredProducts(orderedProducts);
-  }, [products, searchTerm, selectedCategory, selectedBrand, sortOption, getOrSetRandomOrder]);
 
-  // Unique categories for the selected brand
+    setFilteredProducts(orderedProducts);
+  }, [products, searchTerm, selectedCategory, selectedBrand, sortOption]);
+
   const categories = products && products.length > 0
     ? ['All', ...Array.from(new Set(products.filter(p => p.brand === selectedBrand).map(product => product.category)))]
     : ['All'];
@@ -83,6 +75,7 @@ const Shop = () => {
     }
   };
 
+  
   // Responsive: categories as dropdown on mobile, sidebar on desktop
   return (
     <div className="min-h-screen bg-gray-400 py-4 md:py-8 mt-16">
