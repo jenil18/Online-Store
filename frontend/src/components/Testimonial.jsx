@@ -1,4 +1,4 @@
-const Testimonial = () => {
+  const Testimonial = () => {
   return (
     <section
       className="relative bg-fixed bg-center bg-cover h-screen overflow-hidden"
