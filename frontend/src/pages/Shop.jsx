@@ -4,13 +4,17 @@ import { useAuth } from '../context/AuthContext';
 import { useShop } from '../context/ShopContext';
 import { Search, ChevronDown } from 'lucide-react';
 import BackToTop from '../components/BackToTop';
+import { useSelector, useDispatch } from 'react-redux';
+import { setOrder, ORDER_EXPIRY_MS } from '../shopOrderSlice';
 
 const BRANDS = ['Orane', 'Klassy'];
 
 const Shop = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { selectedBrand, setSelectedBrand, getOrSetRandomOrder } = useShop();
+  const { selectedBrand, setSelectedBrand } = useShop();
+  const dispatch = useDispatch();
+  const shopOrder = useSelector(state => state.shopOrder.orders[selectedBrand]);
   const [searchTerm, setSearchTerm] = useState('');
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -40,10 +44,35 @@ const Shop = () => {
 
   useEffect(() => {
     const productsForBrand = products.filter(product => product.brand === selectedBrand);
-    const order = getOrSetRandomOrder(productsForBrand, selectedBrand);
+    const idsFromAPI = productsForBrand.map(p => p.id).sort((a, b) => a - b);
+    const now = Date.now();
+    let order = [];
+    let shouldReshuffle = true;
+    if (
+      shopOrder &&
+      Array.isArray(shopOrder.order) &&
+      Array.isArray(shopOrder.productIds) &&
+      shopOrder.productIds.length === idsFromAPI.length &&
+      shopOrder.productIds.every((id, idx) => id === idsFromAPI[idx]) &&
+      now - shopOrder.timestamp < ORDER_EXPIRY_MS
+    ) {
+      shouldReshuffle = false;
+    }
+    if (shouldReshuffle) {
+      order = idsFromAPI.slice();
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      dispatch(setOrder({ brand: selectedBrand, order, timestamp: now, productIds: idsFromAPI }));
+    } else {
+      order = shopOrder.order;
+    }
     const idToProduct = Object.fromEntries(productsForBrand.map(p => [p.id, p]));
     let orderedProducts = order.map(id => idToProduct[id]).filter(Boolean);
-
+    // If there are new products not in the stored order, append them at the end
+    const extraProducts = productsForBrand.filter(p => !order.includes(p.id));
+    orderedProducts = [...orderedProducts, ...extraProducts];
     if (selectedCategory !== 'All') {
       orderedProducts = orderedProducts.filter(product => product.category === selectedCategory);
     }
@@ -59,9 +88,8 @@ const Shop = () => {
     } else if (sortOption === 'name') {
       orderedProducts = [...orderedProducts].sort((a, b) => a.name.localeCompare(b.name));
     }
-
     setFilteredProducts(orderedProducts);
-  }, [products, searchTerm, selectedCategory, selectedBrand, sortOption]);
+  }, [products, searchTerm, selectedCategory, selectedBrand, sortOption, shopOrder, dispatch]);
 
   const categories = products && products.length > 0
     ? ['All', ...Array.from(new Set(products.filter(p => p.brand === selectedBrand).map(product => product.category)))]
