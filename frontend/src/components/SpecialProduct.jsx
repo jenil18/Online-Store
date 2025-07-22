@@ -16,8 +16,8 @@ const SpecialProduct = () => {
           <p className="text-sm text-gray-400 font-semibold">BE BOLD, BE DARING</p>
           <h2 className="text-3xl md:text-4xl font-bold mt-2 mb-4">A WHOLE NEW LOOK</h2>
           <p className="text-gray-600 mb-6">
-            Flower-moti based resin brooch with stylish golden latkans <br></br>
-            Colors : Pink, Blue
+            Resin based trending haldi set, perfect for the natural and classy look <br></br>
+            Available in Pink color with a unique design that stands out. 
           </p>
           <a href="/shop" className="group inline-flex items-center gap-3 bg-black text-white px-8 py-4 rounded-full font-semibold text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 hover:bg-gray-800">
             VIEW MORE

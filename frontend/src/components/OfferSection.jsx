@@ -20,7 +20,7 @@ const OfferSection = () => {
         {/* Left - Text Content */}
         <div className="space-y-6 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            <span className="text-black">Summer Glow Offer</span>
+            <span className="text-black">Rakshabandhan Special Offer</span>
           </h2>
           <p className="text-lg md:text-xl text-white/90">
             Up to <span className="font-bold text-black">50% OFF</span> on premium cosmetics. Glow brighter this season with our handpicked beauty essentials.
