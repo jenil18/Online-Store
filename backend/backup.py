@@ -1,23 +1,23 @@
 #!/usr/bin/env python
 """
-Simple Manual Database Backup Script for Neon PostgreSQL
+Database Backup Script for Neon PostgreSQL
 
 This script:
 1. Connects to Neon PostgreSQL database
-2. Exports data from specified tables
+2. Exports data from specified tables using pandas for efficiency
 3. Uploads backup to Google Drive
 4. Deletes old data from database to stay within storage limits
 5. Logs all operations
 
-Usage: python simple_backup.py
+Usage: python backup.py
 """
 
 import os
 import sys
 import json
 import logging
-import psycopg2
-import csv
+import psycopg
+import pandas as pd
 from datetime import datetime
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -37,7 +37,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('simple_backup.log'),
+        logging.FileHandler('backup.log'),
         logging.StreamHandler()
     ]
 )
@@ -46,9 +46,9 @@ logger = logging.getLogger(__name__)
 def connect_to_database():
     """Connect to Neon PostgreSQL database"""
     try:
-        conn = psycopg2.connect(
+        conn = psycopg.connect(
             host=os.getenv('DB_HOST'),
-            database=os.getenv('DB_NAME'),
+            dbname=os.getenv('DB_NAME'),
             user=os.getenv('DB_USER'),
             password=os.getenv('DB_PASSWORD'),
             port=os.getenv('DB_PORT', '5432')
@@ -81,24 +81,13 @@ def get_table_list(conn):
 def export_table_to_csv(conn, table_name, backup_dir):
     """Export a single table to CSV format"""
     try:
-        cursor = conn.cursor()
-        
-        # Get column names
-        cursor.execute(f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}' ORDER BY ordinal_position")
-        columns = [row[0] for row in cursor.fetchall()]
-        
-        # Get data
-        cursor.execute(f"SELECT * FROM {table_name}")
-        rows = cursor.fetchall()
+        query = f"SELECT * FROM {table_name}"
+        df = pd.read_sql_query(query, conn)
         
         csv_file = os.path.join(backup_dir, f"{table_name}.csv")
-        with open(csv_file, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
-            writer.writerow(columns)  # Write header
-            writer.writerows(rows)    # Write data
+        df.to_csv(csv_file, index=False)
         
-        cursor.close()
-        logger.info(f"📊 Exported {table_name}: {len(rows)} rows")
+        logger.info(f"📊 Exported {table_name}: {len(df)} rows")
         return csv_file
     except Exception as e:
         logger.error(f"❌ Failed to export {table_name}: {e}")
@@ -353,9 +342,9 @@ def delete_old_data(conn):
 
 def main():
     """Main function to run the complete backup and cleanup process"""
-    logger.info("🚀 Starting simple database backup and cleanup...")
+    logger.info("🚀 Starting database backup and cleanup...")
     print("=" * 60)
-    print("🔄 Simple Database Backup Started")
+    print("🔄 Database Backup Started")
     print("=" * 60)
     
     try:
@@ -373,7 +362,7 @@ def main():
             
             logger.info("🎉 Backup and cleanup process completed successfully!")
             print("=" * 60)
-            print("✅ SIMPLE BACKUP COMPLETED SUCCESSFULLY!")
+            print("✅ BACKUP COMPLETED SUCCESSFULLY!")
             print("=" * 60)
             
             # Clean up local backup files
@@ -413,8 +402,8 @@ if __name__ == "__main__":
     result = main()
     
     if result['status'] == 'success':
-        print("🎉 Simple backup completed successfully!")
+        print("🎉 Backup completed successfully!")
         sys.exit(0)
     else:
-        print(f"❌ Simple backup failed: {result.get('reason', 'unknown')}")
+        print(f"❌ Backup failed: {result.get('reason', 'unknown')}")
         sys.exit(1) 
