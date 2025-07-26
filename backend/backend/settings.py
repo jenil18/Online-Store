@@ -93,6 +93,11 @@ DATABASES = {
         "PASSWORD": config('DB_PASSWORD'),
         "HOST": config('DB_HOST'),
         "PORT": config('DB_PORT', default='5432'),
+        "OPTIONS": {
+            "sslmode": "require",  # Required for Neon
+            "connect_timeout": 10,  # 10 seconds timeout
+        },
+        "CONN_MAX_AGE": 60,  # Keep connections alive for 60 seconds
     }
 }
 
