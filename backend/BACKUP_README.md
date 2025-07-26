@@ -45,14 +45,14 @@ DB_NAME=your_database_name
 DB_USER=your_username
 DB_PASSWORD=your_password
 DB_PORT=5432
-GOOGLE_CREDENTIALS_JSON=your_google_service_account_json
-GOOGLE_USER_EMAIL=your_personal_gmail@gmail.com
+GOOGLE_CREDENTIALS_JSON=your_service_account_json
 ```
 
-### Service Account Delegation Setup (For Personal Gmail)
-1. **Enable Domain-Wide Delegation** in Google Cloud Console
-2. **Add your Gmail** to the service account's delegation
-3. **Set GOOGLE_USER_EMAIL** environment variable to your Gmail
+### Service Account Setup (For Render Deployment)
+1. **Create Service Account** in Google Cloud Console
+2. **Download Service Account JSON** and set as GOOGLE_CREDENTIALS_JSON
+3. **Share your Google Drive folder** with service account email
+4. **No browser interaction required** - works on Render
 
 ### Configuration
 The script can be customized by modifying these variables at the top of the file:
@@ -115,7 +115,7 @@ python test_connection.py
 2. **Google Drive Authentication**:
    - Ensure `GOOGLE_CREDENTIALS_JSON` contains service account JSON
    - Service account must have Google Drive API permissions
-   - **IMPORTANT**: Use Shared Drives (not My Drive) for service accounts
+   - **Share your Google Drive folder** with service account email
 
 3. **Database Connection**:
    - Verify all database environment variables

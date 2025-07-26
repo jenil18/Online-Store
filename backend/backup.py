@@ -21,8 +21,6 @@ import pandas as pd
 from datetime import datetime
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 import pickle
 
 # Configuration
@@ -177,29 +175,21 @@ def backup_data():
         conn.close()
 
 def authenticate_google_drive():
-    """Authenticate with Google Drive API using service account with delegation"""
+    """Authenticate with Google Drive API using service account"""
     try:
         # Load service account credentials from environment variable
         creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
-        user_email = os.getenv('GOOGLE_USER_EMAIL')  # Your personal Gmail
-        
         if not creds_json:
             raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable not set")
         
-        if not user_email:
-            raise ValueError("GOOGLE_USER_EMAIL environment variable not set")
-        
-        # Create service account credentials with delegation
+        # Create service account credentials
         creds = service_account.Credentials.from_service_account_info(
             json.loads(creds_json),
             scopes=SCOPES
         )
         
-        # Delegate to your personal account
-        delegated_creds = creds.with_subject(user_email)
-        
-        drive_service = build('drive', 'v3', credentials=delegated_creds)
-        logger.info(f"✅ Authenticated with Google Drive using delegation to {user_email}")
+        drive_service = build('drive', 'v3', credentials=creds)
+        logger.info("✅ Authenticated with Google Drive using service account")
         return drive_service
         
     except Exception as e:
