@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 """
-Database Backup Script for Neon PostgreSQL
+Database Backup Script with Email Delivery
 
 This script:
 1. Connects to Neon PostgreSQL database
 2. Exports data from specified tables using pandas for efficiency
-3. Uploads backup to Google Drive
-4. Deletes old data from database to stay within storage limits
-5. Logs all operations
+3. Creates zip archive of backup files
+4. Sends backup via email
+5. Deletes old data from database to stay within storage limits
+6. Logs all operations
 
 Usage: python backup.py
 """
@@ -18,17 +19,26 @@ import json
 import logging
 import psycopg
 import pandas as pd
+import zipfile
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.mime.base import MIMEBase
+from email import encoders
 from datetime import datetime
-from googleapiclient.discovery import build
-from google.oauth2 import service_account
-import pickle
+from decouple import config
 
 # Configuration
-SCOPES = ['https://www.googleapis.com/auth/drive.file']
-BACKUP_FOLDER_NAME = 'Database_Backups'
 EXCLUDED_FROM_BACKUP = ['auth_user', 'auth_group', 'product']  # Tables to exclude from backup
 EXCLUDED_FROM_DELETION = ['auth_user', 'auth_group', 'product', 'django_migrations', 'django_content_type', 'django_admin_log']  # Tables to never delete from
 RETENTION_DAYS = 30  # Keep data for 30 days
+
+# Email Configuration
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USER = config('EMAIL_USER', default='your-email@gmail.com')
+EMAIL_PASSWORD = config('EMAIL_PASSWORD', default='your-app-password')
+EMAIL_TO = config('EMAIL_TO', default='your-email@gmail.com')
 
 # Setup logging
 logging.basicConfig(
@@ -45,11 +55,11 @@ def connect_to_database():
     """Connect to Neon PostgreSQL database"""
     try:
         conn = psycopg.connect(
-            host=os.getenv('DB_HOST'),
-            dbname=os.getenv('DB_NAME'),
-            user=os.getenv('DB_USER'),
-            password=os.getenv('DB_PASSWORD'),
-            port=os.getenv('DB_PORT', '5432')
+            host=config('DB_HOST'),
+            dbname=config('DB_NAME'),
+            user=config('DB_USER'),
+            password=config('DB_PASSWORD'),
+            port=config('DB_PORT', default='5432')
         )
         logger.info("✅ Successfully connected to Neon database")
         return conn
@@ -159,7 +169,8 @@ def backup_data():
             'timestamp': timestamp,
             'tables_backed_up': [t for t in tables if t not in EXCLUDED_FROM_BACKUP],
             'tables_excluded': EXCLUDED_FROM_BACKUP,
-            'total_files': len(backup_files)
+            'total_files': len(backup_files),
+            'backup_date': datetime.now().isoformat()
         }
         
         manifest_file = os.path.join(backup_dir, 'backup_manifest.json')
@@ -174,97 +185,75 @@ def backup_data():
     finally:
         conn.close()
 
-def authenticate_google_drive():
-    """Authenticate with Google Drive API using service account"""
+def create_zip_archive(backup_dir, backup_files):
+    """Create zip archive of backup files"""
     try:
-        # Load service account credentials from environment variable
-        creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
-        if not creds_json:
-            raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable not set")
+        zip_filename = f"{backup_dir}.zip"
         
-        # Create service account credentials
-        creds = service_account.Credentials.from_service_account_info(
-            json.loads(creds_json),
-            scopes=SCOPES
+        with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for file_path in backup_files:
+                # Add file to zip with relative path
+                arcname = os.path.basename(file_path)
+                zipf.write(file_path, arcname)
+                logger.info(f"📦 Added to zip: {arcname}")
+        
+        logger.info(f"✅ Zip archive created: {zip_filename}")
+        return zip_filename
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to create zip archive: {e}")
+        raise
+
+def send_email_backup(zip_filename, backup_summary):
+    """Send backup via email"""
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = EMAIL_USER
+        msg['To'] = EMAIL_TO
+        msg['Subject'] = f"Database Backup - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        
+        # Email body
+        body = f"""
+Database Backup Completed Successfully!
+
+📊 Backup Summary:
+{backup_summary}
+
+📦 Attachment: {os.path.basename(zip_filename)}
+📅 Backup Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+This backup contains all database tables in both CSV and SQL formats.
+        """
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Attach zip file
+        with open(zip_filename, 'rb') as attachment:
+            part = MIMEBase('application', 'zip')
+            part.set_payload(attachment.read())
+        
+        encoders.encode_base64(part)
+        part.add_header(
+            'Content-Disposition',
+            f'attachment; filename= {os.path.basename(zip_filename)}'
         )
+        msg.attach(part)
         
-        drive_service = build('drive', 'v3', credentials=creds)
-        logger.info("✅ Authenticated with Google Drive using service account")
-        return drive_service
+        # Send email
+        server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+        server.starttls()
+        server.login(EMAIL_USER, EMAIL_PASSWORD)
+        text = msg.as_string()
+        server.sendmail(EMAIL_USER, EMAIL_TO, text)
+        server.quit()
         
-    except Exception as e:
-        logger.error(f"❌ Google Drive authentication failed: {e}")
-        raise
-
-def get_or_create_backup_folder(drive_service):
-    """Get or create the backup folder in My Drive"""
-    try:
-        # Search for existing folder in My Drive
-        query = f"name='{BACKUP_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
-        
-        results = drive_service.files().list(
-            q=query,
-            spaces='drive'
-        ).execute()
-        
-        if results.get('files'):
-            backup_folder_id = results['files'][0]['id']
-            logger.info(f"📁 Found existing backup folder: {BACKUP_FOLDER_NAME}")
-        else:
-            # Create new folder in My Drive
-            folder_metadata = {
-                'name': BACKUP_FOLDER_NAME,
-                'mimeType': 'application/vnd.google-apps.folder'
-            }
-            
-            folder = drive_service.files().create(
-                body=folder_metadata,
-                fields='id'
-            ).execute()
-            backup_folder_id = folder.get('id')
-            logger.info(f"📁 Created new backup folder: {BACKUP_FOLDER_NAME}")
-        
-        return backup_folder_id
+        logger.info(f"✅ Backup email sent successfully to {EMAIL_TO}")
+        return True
         
     except Exception as e:
-        logger.error(f"❌ Failed to create/find backup folder: {e}")
+        logger.error(f"❌ Failed to send email: {e}")
         raise
-
-def upload_to_drive(backup_dir, backup_files):
-    """Upload backup files to Google Drive"""
-    logger.info("☁️ Starting upload to Google Drive...")
-    
-    drive_service = authenticate_google_drive()
-    backup_folder_id = get_or_create_backup_folder(drive_service)
-    
-    uploaded_files = []
-    
-    for file_path in backup_files:
-        try:
-            file_name = os.path.basename(file_path)
-            
-            # Create file metadata
-            file_metadata = {
-                'name': f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{file_name}",
-                'parents': [backup_folder_id]
-            }
-            
-            # Upload file
-            media = drive_service.files().create(
-                body=file_metadata,
-                media_body=file_path,
-                fields='id,name'
-            ).execute()
-            
-            uploaded_files.append(media)
-            logger.info(f"📤 Uploaded: {file_name}")
-            
-        except Exception as e:
-            logger.error(f"❌ Failed to upload {file_path}: {e}")
-            raise
-    
-    logger.info(f"✅ Upload completed: {len(uploaded_files)} files uploaded")
-    return uploaded_files
 
 def delete_old_data(conn):
     """Delete old data from tables to stay within storage limits"""
@@ -282,7 +271,6 @@ def delete_old_data(conn):
         for table in cleanable_tables:
             try:
                 # Delete data older than RETENTION_DAYS
-                # Adjust the date column based on your table structure
                 if table == 'cart_order':
                     delete_query = f"""
                         DELETE FROM {table} 
@@ -332,7 +320,7 @@ def delete_old_data(conn):
 
 def main():
     """Main function to run the complete backup and cleanup process"""
-    logger.info("🚀 Starting database backup and cleanup...")
+    logger.info("🚀 Starting database backup and email delivery...")
     print("=" * 60)
     print("🔄 Database Backup Started")
     print("=" * 60)
@@ -341,11 +329,21 @@ def main():
         # Step 1: Backup data
         backup_dir, backup_files = backup_data()
         
-        # Step 2: Upload to Google Drive
-        uploaded_files = upload_to_drive(backup_dir, backup_files)
+        # Step 2: Create zip archive
+        zip_filename = create_zip_archive(backup_dir, backup_files)
         
-        # Step 3: Delete old data (only if upload was successful)
-        if uploaded_files:
+        # Step 3: Send email
+        backup_summary = f"""
+• Total files: {len(backup_files)}
+• Backup directory: {backup_dir}
+• Zip file: {os.path.basename(zip_filename)}
+• File size: {os.path.getsize(zip_filename) / 1024:.1f} KB
+        """
+        
+        email_sent = send_email_backup(zip_filename, backup_summary)
+        
+        # Step 4: Delete old data (only if email was successful)
+        if email_sent:
             conn = connect_to_database()
             deleted_counts = delete_old_data(conn)
             conn.close()
@@ -355,14 +353,15 @@ def main():
             print("✅ BACKUP COMPLETED SUCCESSFULLY!")
             print("=" * 60)
             
-            # Clean up local backup files
+            # Clean up local files
             import shutil
             shutil.rmtree(backup_dir)
-            logger.info(f"🧹 Cleaned up local backup directory: {backup_dir}")
+            os.remove(zip_filename)
+            logger.info(f"🧹 Cleaned up local files")
             
             print(f"📊 Summary:")
             print(f"   - Backup files created: {len(backup_files)}")
-            print(f"   - Files uploaded to Google Drive: {len(uploaded_files)}")
+            print(f"   - Email sent to: {EMAIL_TO}")
             print(f"   - Tables cleaned: {len(deleted_counts)}")
             print(f"   - Total rows deleted: {sum(deleted_counts.values())}")
             print("=" * 60)
@@ -370,16 +369,16 @@ def main():
             return {
                 'status': 'success',
                 'backup_files': len(backup_files),
-                'uploaded_files': len(uploaded_files),
+                'email_sent': email_sent,
                 'deleted_counts': deleted_counts,
                 'timestamp': datetime.now().isoformat()
             }
         else:
-            logger.error("❌ Upload failed, skipping data deletion")
+            logger.error("❌ Email failed, skipping data deletion")
             print("=" * 60)
-            print("❌ BACKUP FAILED - Upload to Google Drive failed")
+            print("❌ BACKUP FAILED - Email delivery failed")
             print("=" * 60)
-            return {'status': 'failed', 'reason': 'upload_failed'}
+            return {'status': 'failed', 'reason': 'email_failed'}
             
     except Exception as e:
         logger.error(f"❌ Backup and cleanup process failed: {e}")
