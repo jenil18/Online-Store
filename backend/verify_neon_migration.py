@@ -20,7 +20,7 @@ def verify_migration():
     try:
         from django.contrib.auth import get_user_model
         from product.models import Product
-        from cart.models import Order, OrderItem
+        from cart.models import Order
         
         User = get_user_model()
         
@@ -28,13 +28,11 @@ def verify_migration():
         user_count = User.objects.count()
         product_count = Product.objects.count()
         order_count = Order.objects.count()
-        order_item_count = OrderItem.objects.count()
         
         print("📊 Data Counts:")
         print(f"✅ Users: {user_count}")
         print(f"✅ Products: {product_count}")
         print(f"✅ Orders: {order_count}")
-        print(f"✅ Order Items: {order_item_count}")
         
         # Show some sample data
         if user_count > 0:
