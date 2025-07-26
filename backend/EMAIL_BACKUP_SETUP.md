@@ -7,6 +7,7 @@ This backup script exports your database and sends it via email as a zip attachm
 - ✅ **Database Export**: Exports all tables to CSV and SQL formats
 - ✅ **Zip Archive**: Creates compressed backup file
 - ✅ **Email Delivery**: Sends backup to your email
+- ✅ **IST Timezone**: All timestamps in Indian Standard Time
 - ✅ **Automatic Cleanup**: Removes old data after successful backup
 - ✅ **No External Dependencies**: Works with any Gmail account
 
@@ -54,10 +55,10 @@ python backup.py
 6. **Remove** local backup files
 
 ### Email Features:
-- 📧 **Subject**: "Database Backup - [Date Time]"
+- 📧 **Subject**: "Database Backup - [Date Time IST]"
 - 📦 **Attachment**: Compressed zip file
 - 📊 **Summary**: Backup details in email body
-- 📅 **Timestamp**: Exact backup time
+- 📅 **Timestamp**: Exact backup time (IST timezone)
 
 ### File Size Limits:
 - ✅ **Gmail limit**: 25 MB per email

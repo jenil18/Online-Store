@@ -25,13 +25,20 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from decouple import config
 
 # Configuration
 EXCLUDED_FROM_BACKUP = ['auth_user', 'auth_group', 'product']  # Tables to exclude from backup
 EXCLUDED_FROM_DELETION = ['auth_user', 'auth_group', 'product', 'django_migrations', 'django_content_type', 'django_admin_log']  # Tables to never delete from
 RETENTION_DAYS = 30  # Keep data for 30 days
+
+# Timezone Configuration (IST = UTC+5:30)
+IST_TIMEZONE = timezone(timedelta(hours=5, minutes=30))
+
+def get_ist_time():
+    """Get current time in IST"""
+    return datetime.now(IST_TIMEZONE)
 
 # Email Configuration
 EMAIL_HOST = 'smtp.gmail.com'
@@ -117,7 +124,7 @@ def export_table_to_sql(conn, table_name, backup_dir):
         sql_file = os.path.join(backup_dir, f"{table_name}.sql")
         with open(sql_file, 'w') as f:
             f.write(f"-- Table: {table_name}\n")
-            f.write(f"-- Exported on: {datetime.now()}\n\n")
+            f.write(f"-- Exported on: {get_ist_time()}\n\n")
             
             if rows:
                 # Create INSERT statements
@@ -142,8 +149,8 @@ def backup_data():
     conn = connect_to_database()
     tables = get_table_list(conn)
     
-    # Create backup directory
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # Create backup directory with IST timestamp
+    timestamp = get_ist_time().strftime("%Y%m%d_%H%M%S")
     backup_dir = f"backup_{timestamp}"
     os.makedirs(backup_dir, exist_ok=True)
     
@@ -170,7 +177,7 @@ def backup_data():
             'tables_backed_up': [t for t in tables if t not in EXCLUDED_FROM_BACKUP],
             'tables_excluded': EXCLUDED_FROM_BACKUP,
             'total_files': len(backup_files),
-            'backup_date': datetime.now().isoformat()
+            'backup_date': get_ist_time().isoformat()
         }
         
         manifest_file = os.path.join(backup_dir, 'backup_manifest.json')
@@ -211,7 +218,7 @@ def send_email_backup(zip_filename, backup_summary):
         msg = MIMEMultipart()
         msg['From'] = EMAIL_USER
         msg['To'] = EMAIL_TO
-        msg['Subject'] = f"Database Backup - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        msg['Subject'] = f"Database Backup - {get_ist_time().strftime('%Y-%m-%d %H:%M:%S')}"
         
         # Email body
         body = f"""
@@ -221,7 +228,7 @@ Database Backup Completed Successfully!
 {backup_summary}
 
 📦 Attachment: {os.path.basename(zip_filename)}
-📅 Backup Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+📅 Backup Date: {get_ist_time().strftime('%Y-%m-%d %H:%M:%S')}
 
 This backup contains all database tables in both CSV and SQL formats.
         """
@@ -371,7 +378,7 @@ def main():
                 'backup_files': len(backup_files),
                 'email_sent': email_sent,
                 'deleted_counts': deleted_counts,
-                'timestamp': datetime.now().isoformat()
+                'timestamp': get_ist_time().isoformat()
             }
         else:
             logger.error("❌ Email failed, skipping data deletion")
