@@ -20,9 +20,7 @@ import psycopg
 import pandas as pd
 from datetime import datetime
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
+from google.oauth2 import service_account
 import pickle
 
 # Configuration
@@ -177,42 +175,26 @@ def backup_data():
         conn.close()
 
 def authenticate_google_drive():
-    """Authenticate with Google Drive API"""
-    creds = None
-    
-    # Check if token file exists
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
-            creds = pickle.load(token)
-    
-    # If no valid credentials, get new ones
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            # Load credentials from environment variable
-            creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
-            if creds_json:
-                import tempfile
-                with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-                    f.write(creds_json)
-                    creds_file = f.name
-                
-                flow = InstalledAppFlow.from_client_secrets_file(creds_file, SCOPES)
-                creds = flow.run_local_server(port=0)
-                
-                # Clean up temp file
-                os.unlink(creds_file)
-            else:
-                raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable not set")
+    """Authenticate with Google Drive API using service account"""
+    try:
+        # Load service account credentials from environment variable
+        creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
+        if not creds_json:
+            raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable not set")
         
-        # Save credentials for next run
-        with open('token.pickle', 'wb') as token:
-            pickle.dump(creds, token)
-    
-    drive_service = build('drive', 'v3', credentials=creds)
-    logger.info("✅ Authenticated with Google Drive")
-    return drive_service
+        # Create service account credentials
+        creds = service_account.Credentials.from_service_account_info(
+            json.loads(creds_json),
+            scopes=SCOPES
+        )
+        
+        drive_service = build('drive', 'v3', credentials=creds)
+        logger.info("✅ Authenticated with Google Drive using service account")
+        return drive_service
+        
+    except Exception as e:
+        logger.error(f"❌ Google Drive authentication failed: {e}")
+        raise
 
 def get_or_create_backup_folder(drive_service):
     """Get or create the backup folder in Google Drive"""

@@ -44,7 +44,7 @@ DB_NAME=your_database_name
 DB_USER=your_username
 DB_PASSWORD=your_password
 DB_PORT=5432
-GOOGLE_CREDENTIALS_JSON=your_google_credentials_json
+GOOGLE_CREDENTIALS_JSON=your_google_service_account_json
 ```
 
 ### Configuration
@@ -88,8 +88,7 @@ RETENTION_DAYS = 30
 psycopg[binary]==3.2.9
 pandas>=2.0.0
 google-api-python-client==2.108.0
-google-auth-oauthlib==1.1.0
-google-auth-httplib2==0.2.0
+google-auth==2.40.3
 ```
 
 ## Testing
@@ -107,8 +106,8 @@ python test_connection.py
    - ✅ **Fixed**: Updated to psycopg3 for Python 3.13 compatibility
 
 2. **Google Drive Authentication**:
-   - Ensure `GOOGLE_CREDENTIALS_JSON` is set correctly
-   - Check Google Drive API permissions
+   - Ensure `GOOGLE_CREDENTIALS_JSON` contains service account JSON
+   - Service account must have Google Drive API permissions
 
 3. **Database Connection**:
    - Verify all database environment variables

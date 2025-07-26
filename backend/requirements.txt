@@ -13,5 +13,4 @@ setuptools==68.2.2
 cloudinary
 django-cloudinary-storage
 google-api-python-client==2.108.0
-google-auth-oauthlib==1.1.0
-google-auth-httplib2==0.2.0 
+google-auth==2.40.3 
