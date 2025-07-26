@@ -17,7 +17,7 @@ python fix_migrations.py
 python manage.py migrate
 
 # Optional: Load data if you have a backup
-# python manage.py loaddata data_backup.json
+# python manage.py loaddata render_data_backup.json
 
 # Start the application
 gunicorn backend.wsgi:application 
