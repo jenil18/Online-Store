@@ -21,6 +21,8 @@ import pandas as pd
 from datetime import datetime
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
 import pickle
 
 # Configuration
@@ -175,21 +177,29 @@ def backup_data():
         conn.close()
 
 def authenticate_google_drive():
-    """Authenticate with Google Drive API using service account"""
+    """Authenticate with Google Drive API using service account with delegation"""
     try:
         # Load service account credentials from environment variable
         creds_json = os.getenv('GOOGLE_CREDENTIALS_JSON')
+        user_email = os.getenv('GOOGLE_USER_EMAIL')  # Your personal Gmail
+        
         if not creds_json:
             raise ValueError("GOOGLE_CREDENTIALS_JSON environment variable not set")
         
-        # Create service account credentials
+        if not user_email:
+            raise ValueError("GOOGLE_USER_EMAIL environment variable not set")
+        
+        # Create service account credentials with delegation
         creds = service_account.Credentials.from_service_account_info(
             json.loads(creds_json),
             scopes=SCOPES
         )
         
-        drive_service = build('drive', 'v3', credentials=creds)
-        logger.info("✅ Authenticated with Google Drive using service account")
+        # Delegate to your personal account
+        delegated_creds = creds.with_subject(user_email)
+        
+        drive_service = build('drive', 'v3', credentials=delegated_creds)
+        logger.info(f"✅ Authenticated with Google Drive using delegation to {user_email}")
         return drive_service
         
     except Exception as e:
@@ -197,30 +207,38 @@ def authenticate_google_drive():
         raise
 
 def get_or_create_backup_folder(drive_service):
-    """Get or create the backup folder in Google Drive"""
-    # Search for existing folder
-    results = drive_service.files().list(
-        q=f"name='{BACKUP_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
-        spaces='drive'
-    ).execute()
-    
-    if results['files']:
-        backup_folder_id = results['files'][0]['id']
-        logger.info(f"📁 Found existing backup folder: {BACKUP_FOLDER_NAME}")
-    else:
-        # Create new folder
-        folder_metadata = {
-            'name': BACKUP_FOLDER_NAME,
-            'mimeType': 'application/vnd.google-apps.folder'
-        }
-        folder = drive_service.files().create(
-            body=folder_metadata,
-            fields='id'
+    """Get or create the backup folder in My Drive"""
+    try:
+        # Search for existing folder in My Drive
+        query = f"name='{BACKUP_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+        
+        results = drive_service.files().list(
+            q=query,
+            spaces='drive'
         ).execute()
-        backup_folder_id = folder.get('id')
-        logger.info(f"📁 Created new backup folder: {BACKUP_FOLDER_NAME}")
-    
-    return backup_folder_id
+        
+        if results.get('files'):
+            backup_folder_id = results['files'][0]['id']
+            logger.info(f"📁 Found existing backup folder: {BACKUP_FOLDER_NAME}")
+        else:
+            # Create new folder in My Drive
+            folder_metadata = {
+                'name': BACKUP_FOLDER_NAME,
+                'mimeType': 'application/vnd.google-apps.folder'
+            }
+            
+            folder = drive_service.files().create(
+                body=folder_metadata,
+                fields='id'
+            ).execute()
+            backup_folder_id = folder.get('id')
+            logger.info(f"📁 Created new backup folder: {BACKUP_FOLDER_NAME}")
+        
+        return backup_folder_id
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to create/find backup folder: {e}")
+        raise
 
 def upload_to_drive(backup_dir, backup_files):
     """Upload backup files to Google Drive"""
