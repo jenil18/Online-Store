@@ -9,33 +9,33 @@ const Testimonial = () => {
   const testimonials = [
     {
       id: 1,
-      name: "Sarah Johnson",
-      image: "/images/client.jpg",
-      text: "Amazing products! The quality is outstanding and the customer service is exceptional. I've been using their beauty products for months and I'm absolutely in love with the results. Highly recommended!"
+      name: "Ojas Rajani",
+      image: "/images/client-1-c.jpg",
+      text: "The Best Quality Hair Accessories, Total Value For Money!"
     },
     {
       id: 2,
-      name: "Emily Rodriguez",
-      image: "/images/client.jpg",
-      text: "I was skeptical at first, but these products exceeded my expectations. The natural ingredients and professional results have made me a loyal customer. The team is always helpful and responsive."
+      name: "Komal Jaiswal",
+      image: "/images/client-2-c.jpg",
+      text: "All Products, Superb Quality! I suggest everyone to buy from Shree Krishna Beauty Products."
     },
     {
       id: 3,
-      name: "Priya Sharma",
-      image: "/images/client.jpg",
-      text: "Best beauty products I've ever used! The range is extensive and every product delivers what it promises. My skin has never looked better. Thank you for such amazing quality!"
+      name: "Rita Panchal",
+      image: "/images/client-3-c.jpg",
+      text: "Every Product is amazing!...and reasonable...I like their fast delivery service."
     },
     {
       id: 4,
-      name: "Maria Garcia",
-      image: "/images/client.jpg",
-      text: "Incredible experience from start to finish. The products are premium quality and the results are visible within days. The customer support team is incredibly helpful and friendly."
+      name: "Priyanka Vyas",
+      image: "/images/client-4-c.jpg",
+      text: "Highly impressed with the genuine products and super-fast delivery! Exceptional service, will definitely shop again."
     },
     {
       id: 5,
-      name: "Jennifer Lee",
-      image: "/images/client.jpg",
-      text: "I've tried many beauty brands, but this one stands out. The products are effective, safe, and reasonably priced. My friends keep asking about my glowing skin - I owe it all to these amazing products!"
+      name: "Ojas Rajani",
+      image: "/images/client-1-c.jpg",
+      text: "The Best Quality Hair Accessories, Total Value For Money!"
     }
   ];
 
