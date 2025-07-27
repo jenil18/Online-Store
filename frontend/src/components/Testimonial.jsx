@@ -110,7 +110,7 @@ const Testimonial = () => {
                   <img
                     src={testimonial.image}
                     alt={testimonial.name}
-                    className="w-16 h-16 rounded-full border-2 border-white"
+                    className="w-20 h-20 rounded-full border-2 border-white"
                   />
                   <p className="text-white font-medium">{testimonial.name}</p>
                 </div>
@@ -119,7 +119,7 @@ const Testimonial = () => {
           </div>
 
           {/* Navigation Dots */}
-          <div className="flex justify-center space-x-2 mt-8">
+          <div className="flex justify-center space-x-2 mt-12">
             {testimonials.map((_, index) => (
               <button
                 key={index}
@@ -133,13 +133,6 @@ const Testimonial = () => {
               />
             ))}
           </div>
-
-          {/* Pause Indicator */}
-          {isPaused && (
-            <div className="mt-4">
-              <p className="text-white/70 text-sm">⏸️ Paused</p>
-            </div>
-          )}
         </div>
       </div>
       
