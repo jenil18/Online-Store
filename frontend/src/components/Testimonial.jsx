@@ -91,7 +91,7 @@ const Testimonial = () => {
           </h2>
           
           {/* Testimonial Content */}
-          <div className="relative min-h-[200px] flex items-center justify-center">
+          <div className="relative min-h-[300px] flex items-center justify-center">
             {testimonials.map((testimonial, index) => (
               <div
                 key={testimonial.id}
@@ -106,31 +106,31 @@ const Testimonial = () => {
                 </p>
 
                 {/* Client Info */}
-                <div className="flex flex-col items-center space-y-2">
+                <div className="flex flex-col items-center space-y-4">
                   <img
                     src={testimonial.image}
                     alt={testimonial.name}
                     className="w-20 h-20 rounded-full border-2 border-white"
                   />
                   <p className="text-white font-medium">{testimonial.name}</p>
+                  
+                  {/* Navigation Dots */}
+                  <div className="flex justify-center space-x-2 mt-4">
+                    {testimonials.map((_, dotIndex) => (
+                      <button
+                        key={dotIndex}
+                        onClick={() => goToSlide(dotIndex)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          dotIndex === currentSlide
+                            ? 'bg-white scale-110'
+                            : 'bg-white/50 hover:bg-white/75'
+                        }`}
+                        aria-label={`Go to slide ${dotIndex + 1}`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-
-          {/* Navigation Dots */}
-          <div className="flex justify-center space-x-2 mt-12">
-            {testimonials.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentSlide
-                    ? 'bg-white scale-110'
-                    : 'bg-white/50 hover:bg-white/75'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
             ))}
           </div>
         </div>
