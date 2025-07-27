@@ -54,9 +54,9 @@ const AdPopup = () => {
           {/* Advertisement Image */}
           <div className="relative">
             <img
-              src="/images/offer_poster.png" // Use your ad poster image
+              src="/images/offer_poster.jpg" // Use your ad poster image
               alt="Special Advertisement"
-              className="w-full max-w-md rounded-2xl shadow-2xl animate-slide-in-up"
+              className="w-full max-w-2xl rounded-2xl shadow-2xl animate-slide-in-up"
             />
             
             {/* Optional: Add a subtle overlay for better text readability */}
