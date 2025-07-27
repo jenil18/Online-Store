@@ -4,6 +4,7 @@ import SpecialProduct from '../components/SpecialProduct';
 import Testimonial from '../components/Testimonial';
 import OfferSection from '../components/OfferSection';
 import BackToTop from '../components/BackToTop';
+import AdPopup from '../components/AdPopup';
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
       <SpecialProduct />
       <Testimonial />
       <BackToTop />
+      <AdPopup />
     </>
   );
 }
