@@ -4,7 +4,8 @@ from .views import (
     OrderListCreateView, OrderDetailView,
     AdminOrderListView, AdminOrderApprovalView,
     UserOrderStatusView, CheckoutView,
-    RazorpayOrderCreateView, PaymentCompletionView, OrderHistoryView
+    RazorpayOrderCreateView, PaymentCompletionView, OrderHistoryView,
+    RazorpayWebhookView
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
     path('order-status/', UserOrderStatusView.as_view(), name='user-order-status'),
     path('order-history/', OrderHistoryView.as_view(), name='order-history'),
     path('checkout/<int:order_id>/', CheckoutView.as_view(), name='checkout'),
+    path('webhook/razorpay/', RazorpayWebhookView.as_view(), name='razorpay-webhook'),
 ] 

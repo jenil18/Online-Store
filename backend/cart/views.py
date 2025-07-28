@@ -14,6 +14,12 @@ import razorpay
 from django.conf import settings
 from django.core.mail import send_mail
 from django.core.mail import EmailMultiAlternatives
+import json
+import hmac
+import hashlib
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.http import HttpResponse
 
 # Create your views here.
 
@@ -420,3 +426,197 @@ class OrderHistoryView(generics.ListAPIView):
         return Order.objects.filter(
             user=self.request.user
         ).order_by('-created_at')[:20]
+
+@method_decorator(csrf_exempt, name='dispatch')
+class RazorpayWebhookView(APIView):
+    """
+    Handle Razorpay webhooks for payment events
+    """
+    def post(self, request):
+        print(f"[Webhook] Received webhook request")
+        print(f"[Webhook] Headers: {dict(request.headers)}")
+        
+        # Get the webhook signature
+        signature = request.headers.get('X-Razorpay-Signature')
+        if not signature:
+            print("[Webhook] No signature found in headers")
+            return HttpResponse(status=400)
+        
+        # Get the webhook body
+        webhook_body = request.body
+        print(f"[Webhook] Body length: {len(webhook_body)}")
+        
+        try:
+            # Initialize Razorpay client
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            
+            # Verify webhook signature
+            client.utility.verify_webhook_signature(
+                webhook_body, signature, settings.RAZORPAY_WEBHOOK_SECRET
+            )
+            print("[Webhook] Signature verification successful")
+            
+            # Parse the webhook data
+            webhook_data = json.loads(webhook_body)
+            event = webhook_data.get('event')
+            payload = webhook_data.get('payload', {})
+            
+            print(f"[Webhook] Event: {event}")
+            print(f"[Webhook] Payload: {json.dumps(payload, indent=2)}")
+            
+            # Handle different events
+            if event == 'payment.captured':
+                self.handle_payment_captured(payload)
+            elif event == 'payment.failed':
+                self.handle_payment_failed(payload)
+            elif event == 'order.paid':
+                self.handle_order_paid(payload)
+            else:
+                print(f"[Webhook] Unhandled event: {event}")
+            
+            return HttpResponse(status=200)
+            
+        except Exception as e:
+            print(f"[Webhook] Error processing webhook: {str(e)}")
+            return HttpResponse(status=400)
+    
+    def handle_payment_captured(self, payload):
+        """Handle successful payment capture"""
+        try:
+            payment_entity = payload['payment']['entity']
+            payment_id = payment_entity['id']
+            order_id = payment_entity.get('notes', {}).get('order_id')
+            
+            print(f"[Webhook] Payment captured - Payment ID: {payment_id}, Order ID: {order_id}")
+            
+            if order_id:
+                try:
+                    order = Order.objects.get(id=order_id)
+                    order.payment_status = 'success'
+                    order.transaction_id = payment_id
+                    order.status = 'completed'
+                    order.save()
+                    
+                    print(f"[Webhook] Order {order_id} updated to completed")
+                    
+                    # Send success email
+                    self.send_payment_success_email(order)
+                    
+                except Order.DoesNotExist:
+                    print(f"[Webhook] Order {order_id} not found")
+                    
+        except Exception as e:
+            print(f"[Webhook] Error handling payment captured: {str(e)}")
+    
+    def handle_payment_failed(self, payload):
+        """Handle failed payment"""
+        try:
+            payment_entity = payload['payment']['entity']
+            payment_id = payment_entity['id']
+            order_id = payment_entity.get('notes', {}).get('order_id')
+            
+            print(f"[Webhook] Payment failed - Payment ID: {payment_id}, Order ID: {order_id}")
+            
+            if order_id:
+                try:
+                    order = Order.objects.get(id=order_id)
+                    order.payment_status = 'failed'
+                    order.save()
+                    
+                    print(f"[Webhook] Order {order_id} updated to failed")
+                    
+                    # Send failure email
+                    self.send_payment_failure_email(order)
+                    
+                except Order.DoesNotExist:
+                    print(f"[Webhook] Order {order_id} not found")
+                    
+        except Exception as e:
+            print(f"[Webhook] Error handling payment failed: {str(e)}")
+    
+    def handle_order_paid(self, payload):
+        """Handle order paid event"""
+        try:
+            order_entity = payload['order']['entity']
+            order_id = order_entity.get('notes', {}).get('order_id')
+            
+            print(f"[Webhook] Order paid - Order ID: {order_id}")
+            
+            if order_id:
+                try:
+                    order = Order.objects.get(id=order_id)
+                    order.payment_status = 'success'
+                    order.status = 'completed'
+                    order.save()
+                    
+                    print(f"[Webhook] Order {order_id} updated to completed")
+                    
+                except Order.DoesNotExist:
+                    print(f"[Webhook] Order {order_id} not found")
+                    
+        except Exception as e:
+            print(f"[Webhook] Error handling order paid: {str(e)}")
+    
+    def send_payment_success_email(self, order):
+        """Send payment success email"""
+        try:
+            user_email = order.user.email
+            if user_email:
+                subject = f"Payment Successful - Order #{order.id}"
+                html_message = f"""
+                <div style='font-family:sans-serif;background:#f7fafc;padding:32px;'>
+                    <div style='max-width:600px;margin:auto;background:white;border-radius:16px;box-shadow:0 4px 24px #0001;padding:32px;'>
+                        <h1 style='color:#22c55e;text-align:center;font-size:2.5rem;margin-bottom:8px;'>Payment Successful!</h1>
+                        <p style='text-align:center;font-size:1.2rem;color:#555;margin-bottom:24px;'>Thank you for your purchase!</p>
+                        <div style='background:#e0f7fa;padding:16px 24px;border-radius:12px;margin-bottom:24px;'>
+                            <h2 style='color:#0ea5e9;margin:0 0 8px 0;'>Order #{order.id}</h2>
+                            <p style='margin:0;color:#555;'>Transaction ID: {order.transaction_id}</p>
+                        </div>
+                        <p style='text-align:center;color:#555;'>Your order has been confirmed and will be processed soon.</p>
+                    </div>
+                </div>
+                """
+                
+                send_mail(
+                    subject=subject,
+                    message="",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[user_email],
+                    html_message=html_message
+                )
+                print(f"[Webhook] Payment success email sent to {user_email}")
+                
+        except Exception as e:
+            print(f"[Webhook] Error sending payment success email: {str(e)}")
+    
+    def send_payment_failure_email(self, order):
+        """Send payment failure email"""
+        try:
+            user_email = order.user.email
+            if user_email:
+                subject = f"Payment Failed - Order #{order.id}"
+                html_message = f"""
+                <div style='font-family:sans-serif;background:#f7fafc;padding:32px;'>
+                    <div style='max-width:600px;margin:auto;background:white;border-radius:16px;box-shadow:0 4px 24px #0001;padding:32px;'>
+                        <h1 style='color:#ef4444;text-align:center;font-size:2.5rem;margin-bottom:8px;'>Payment Failed</h1>
+                        <p style='text-align:center;font-size:1.2rem;color:#555;margin-bottom:24px;'>We couldn't process your payment.</p>
+                        <div style='background:#fef2f2;padding:16px 24px;border-radius:12px;margin-bottom:24px;'>
+                            <h2 style='color:#dc2626;margin:0 0 8px 0;'>Order #{order.id}</h2>
+                            <p style='margin:0;color:#555;'>Please try again or contact support.</p>
+                        </div>
+                        <p style='text-align:center;color:#555;'>You can retry the payment from your order history.</p>
+                    </div>
+                </div>
+                """
+                
+                send_mail(
+                    subject=subject,
+                    message="",
+                    from_email=settings.EMAIL_HOST_USER,
+                    recipient_list=[user_email],
+                    html_message=html_message
+                )
+                print(f"[Webhook] Payment failure email sent to {user_email}")
+                
+        except Exception as e:
+            print(f"[Webhook] Error sending payment failure email: {str(e)}")
