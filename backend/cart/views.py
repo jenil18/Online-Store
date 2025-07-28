@@ -20,6 +20,10 @@ import hashlib
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.http import HttpResponse
+import logging
+
+# Get logger for this module
+logger = logging.getLogger(__name__)
 
 # Create your views here.
 
@@ -433,18 +437,18 @@ class RazorpayWebhookView(APIView):
     Handle Razorpay webhooks for payment events
     """
     def post(self, request):
-        print(f"[Webhook] Received webhook request")
-        print(f"[Webhook] Headers: {dict(request.headers)}")
+        logger.info("Received Razorpay webhook request")
+        logger.debug(f"Webhook headers: {dict(request.headers)}")
         
         # Get the webhook signature
         signature = request.headers.get('X-Razorpay-Signature')
         if not signature:
-            print("[Webhook] No signature found in headers")
+            logger.error("No signature found in webhook headers")
             return HttpResponse(status=400)
         
         # Get the webhook body
         webhook_body = request.body
-        print(f"[Webhook] Body length: {len(webhook_body)}")
+        logger.debug(f"Webhook body length: {len(webhook_body)}")
         
         try:
             # Initialize Razorpay client
@@ -454,15 +458,15 @@ class RazorpayWebhookView(APIView):
             client.utility.verify_webhook_signature(
                 webhook_body, signature, settings.RAZORPAY_WEBHOOK_SECRET
             )
-            print("[Webhook] Signature verification successful")
+            logger.info("Webhook signature verification successful")
             
             # Parse the webhook data
             webhook_data = json.loads(webhook_body)
             event = webhook_data.get('event')
             payload = webhook_data.get('payload', {})
             
-            print(f"[Webhook] Event: {event}")
-            print(f"[Webhook] Payload: {json.dumps(payload, indent=2)}")
+            logger.info(f"Processing webhook event: {event}")
+            logger.debug(f"Webhook payload: {json.dumps(payload, indent=2)}")
             
             # Handle different events
             if event == 'payment.captured':
@@ -472,12 +476,12 @@ class RazorpayWebhookView(APIView):
             elif event == 'order.paid':
                 self.handle_order_paid(payload)
             else:
-                print(f"[Webhook] Unhandled event: {event}")
+                logger.warning(f"Unhandled webhook event: {event}")
             
             return HttpResponse(status=200)
             
         except Exception as e:
-            print(f"[Webhook] Error processing webhook: {str(e)}")
+            logger.error(f"Error processing webhook: {str(e)}")
             return HttpResponse(status=400)
     
     def handle_payment_captured(self, payload):
@@ -487,7 +491,7 @@ class RazorpayWebhookView(APIView):
             payment_id = payment_entity['id']
             order_id = payment_entity.get('notes', {}).get('order_id')
             
-            print(f"[Webhook] Payment captured - Payment ID: {payment_id}, Order ID: {order_id}")
+            logger.info(f"Payment captured - Payment ID: {payment_id}, Order ID: {order_id}")
             
             if order_id:
                 try:
@@ -497,16 +501,16 @@ class RazorpayWebhookView(APIView):
                     order.status = 'completed'
                     order.save()
                     
-                    print(f"[Webhook] Order {order_id} updated to completed")
+                    logger.info(f"Order {order_id} updated to completed status")
                     
                     # Send success email
                     self.send_payment_success_email(order)
                     
                 except Order.DoesNotExist:
-                    print(f"[Webhook] Order {order_id} not found")
+                    logger.error(f"Order {order_id} not found in database")
                     
         except Exception as e:
-            print(f"[Webhook] Error handling payment captured: {str(e)}")
+            logger.error(f"Error handling payment captured: {str(e)}")
     
     def handle_payment_failed(self, payload):
         """Handle failed payment"""
@@ -515,7 +519,7 @@ class RazorpayWebhookView(APIView):
             payment_id = payment_entity['id']
             order_id = payment_entity.get('notes', {}).get('order_id')
             
-            print(f"[Webhook] Payment failed - Payment ID: {payment_id}, Order ID: {order_id}")
+            logger.info(f"Payment failed - Payment ID: {payment_id}, Order ID: {order_id}")
             
             if order_id:
                 try:
@@ -523,16 +527,16 @@ class RazorpayWebhookView(APIView):
                     order.payment_status = 'failed'
                     order.save()
                     
-                    print(f"[Webhook] Order {order_id} updated to failed")
+                    logger.info(f"Order {order_id} updated to failed status")
                     
                     # Send failure email
                     self.send_payment_failure_email(order)
                     
                 except Order.DoesNotExist:
-                    print(f"[Webhook] Order {order_id} not found")
+                    logger.error(f"Order {order_id} not found in database")
                     
         except Exception as e:
-            print(f"[Webhook] Error handling payment failed: {str(e)}")
+            logger.error(f"Error handling payment failed: {str(e)}")
     
     def handle_order_paid(self, payload):
         """Handle order paid event"""
@@ -540,7 +544,7 @@ class RazorpayWebhookView(APIView):
             order_entity = payload['order']['entity']
             order_id = order_entity.get('notes', {}).get('order_id')
             
-            print(f"[Webhook] Order paid - Order ID: {order_id}")
+            logger.info(f"Order paid - Order ID: {order_id}")
             
             if order_id:
                 try:
@@ -549,13 +553,13 @@ class RazorpayWebhookView(APIView):
                     order.status = 'completed'
                     order.save()
                     
-                    print(f"[Webhook] Order {order_id} updated to completed")
+                    logger.info(f"Order {order_id} updated to completed status")
                     
                 except Order.DoesNotExist:
-                    print(f"[Webhook] Order {order_id} not found")
+                    logger.error(f"Order {order_id} not found in database")
                     
         except Exception as e:
-            print(f"[Webhook] Error handling order paid: {str(e)}")
+            logger.error(f"Error handling order paid: {str(e)}")
     
     def send_payment_success_email(self, order):
         """Send payment success email"""
@@ -584,10 +588,10 @@ class RazorpayWebhookView(APIView):
                     recipient_list=[user_email],
                     html_message=html_message
                 )
-                print(f"[Webhook] Payment success email sent to {user_email}")
+                logger.info(f"Payment success email sent to {user_email}")
                 
         except Exception as e:
-            print(f"[Webhook] Error sending payment success email: {str(e)}")
+            logger.error(f"Error sending payment success email: {str(e)}")
     
     def send_payment_failure_email(self, order):
         """Send payment failure email"""
@@ -616,7 +620,7 @@ class RazorpayWebhookView(APIView):
                     recipient_list=[user_email],
                     html_message=html_message
                 )
-                print(f"[Webhook] Payment failure email sent to {user_email}")
+                logger.info(f"Payment failure email sent to {user_email}")
                 
         except Exception as e:
-            print(f"[Webhook] Error sending payment failure email: {str(e)}")
+            logger.error(f"Error sending payment failure email: {str(e)}")
