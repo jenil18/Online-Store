@@ -47,9 +47,8 @@ export default function CartPage() {
       const result = await placeOrderForApproval(total);
       console.log("✅ Order placed successfully:", result);
       
-      // Clear cart completely after successful order placement
-      await clearCartCompletely();
-      console.log("🧹 Cart cleared after successful order");
+      // Don't clear cart here - it will be cleared after successful payment
+      console.log("📦 Cart preserved for order processing");
       
       setOrderSuccess(true);
       setTimeout(() => {
