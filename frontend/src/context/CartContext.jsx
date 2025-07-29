@@ -54,19 +54,25 @@ export const CartProvider = ({ children }) => {
           brand: item.product.category
         }));
         
-        // Replace local cart with backend cart to avoid duplicates
-        setCartItems(backendCartItems);
+        // Only replace if backend has items, otherwise keep local cart
+        if (backendCartItems.length > 0) {
+          setCartItems(backendCartItems);
+        }
       }
     } catch (err) {
       console.error('Error loading cart items:', err);
     }
   };
 
+  // Force refresh cart from backend
+  const refreshCart = async () => {
+    if (!token) return;
+    await loadCartItems();
+  };
+
   // Sync local cart to backend
   const syncCartToBackend = async () => {
-    if (!token || cartItems.length === 0) {
-      return;
-    }
+    if (!token) return;
 
     try {
       // First, clear existing cart items in backend
@@ -113,7 +119,7 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const addToCart = (product) => {
+  const addToCart = async (product) => {
     setCartItems((prev) => {
       const existing = prev.find((item) => item.id === product.id);
       if (existing) {
@@ -126,15 +132,25 @@ export const CartProvider = ({ children }) => {
         return [...prev, { ...product, quantity: 1 }];
       }
     });
+    
+    // Sync to backend after adding
+    if (token) {
+      setTimeout(() => syncCartToBackend(), 100);
+    }
   };
 
-  const removeFromCart = (id) => {
+  const removeFromCart = async (id) => {
     setCartItems((prev) => prev.filter((item) => item.id !== id));
+    
+    // Sync to backend after removing
+    if (token) {
+      setTimeout(() => syncCartToBackend(), 100);
+    }
   };
 
-  const updateQuantity = (id, quantity) => {
+  const updateQuantity = async (id, quantity) => {
     if (quantity <= 0) {
-      removeFromCart(id);
+      await removeFromCart(id);
       return;
     }
     
@@ -143,6 +159,11 @@ export const CartProvider = ({ children }) => {
         item.id === id ? { ...item, quantity: parseInt(quantity) || 1 } : item
       )
     );
+    
+    // Sync to backend after updating
+    if (token) {
+      setTimeout(() => syncCartToBackend(), 100);
+    }
   };
 
   const clearCart = async () => {
@@ -186,7 +207,10 @@ export const CartProvider = ({ children }) => {
   // Load cart items when user logs in
   useEffect(() => {
     if (token && user) {
-      loadCartItems();
+      // Small delay to ensure user is fully loaded
+      setTimeout(() => {
+        loadCartItems();
+      }, 500);
     }
   }, [token, user]);
 
@@ -201,6 +225,7 @@ export const CartProvider = ({ children }) => {
         clearCart,
         syncCartToBackend,
         loading,
+        refreshCart,
       }}
     >
       {children}

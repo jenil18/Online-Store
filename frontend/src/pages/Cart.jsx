@@ -5,7 +5,7 @@ import { Trash2, ShoppingBag, Clock, CheckCircle, AlertCircle } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart, refreshCart } = useCart();
   const { placeOrderForApproval, loading, error } = useOrder();
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
@@ -81,6 +81,12 @@ export default function CartPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Shopping Cart</h1>
           <p className="text-white/80">Review your items and place your order</p>
+          <button
+            onClick={refreshCart}
+            className="mt-4 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors duration-300"
+          >
+            Refresh Cart
+          </button>
         </div>
 
         {/* Cart Items */}
