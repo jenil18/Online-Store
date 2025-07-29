@@ -28,7 +28,112 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 def remove_non_ascii(text):
-    return ''.join(i if ord(i) < 128 else ' ' for i in text)
+    """Remove non-ASCII characters from text"""
+    return ''.join(char for char in text if ord(char) < 128)
+
+def send_order_approval_email(order):
+    """Send order approval email"""
+    try:
+        user_email = order.user.email
+        if user_email:
+            # Sanitize fields
+            def safe(val):
+                return remove_non_ascii(str(val))
+            
+            order_id = safe(order.id)
+            order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
+            order_total = safe(order.total)
+            
+            subject = safe(f'Order Approved - Order #{order_id}')
+            html_message = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Order Approved</title>
+            </head>
+            <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                    <!-- Header -->
+                    <div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); padding: 40px 30px; text-align: center;">
+                        <h1 style="color: #ffffff; font-size: 32px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">Order Approved!</h1>
+                        <p style="color: #ffffff; font-size: 16px; margin: 10px 0 0 0; opacity: 0.9;">Your order has been approved by our team.</p>
+                    </div>
+                    
+                    <!-- Order Details -->
+                    <div style="padding: 30px; background-color: #f0f9ff; margin: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+                        <h2 style="color: #0ea5e9; font-size: 20px; margin: 0 0 8px 0; font-weight: 600;">Order #{order_id}</h2>
+                        <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Placed on:</strong> {order_date}</p>
+                        <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Order Total:</strong> ₹{order_total}</p>
+                    </div>
+                    
+                    <!-- Approval Message -->
+                    <div style="padding: 0 30px 20px 30px;">
+                        <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0;">
+                            <h3 style="color: #16a34a; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">✅ Order Approved!</h3>
+                            <p style="color: #374151; margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
+                                Great news! Your order has been reviewed and approved by our team. 
+                                All items are in stock and ready for processing.
+                            </p>
+                            <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                <strong>Next Step:</strong> Please complete your payment as soon as possible to proceed with your order.
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Instructions -->
+                    <div style="padding: 0 30px 20px 30px;">
+                        <div style="background-color: #fefce8; padding: 20px; border-radius: 8px; border: 1px solid #fde047;">
+                            <h3 style="color: #eab308; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">💳 Complete Your Payment</h3>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                    <strong>1.</strong> Visit your order status page
+                                </p>
+                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                    <strong>2.</strong> Click on "Proceed to Payment"
+                                </p>
+                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                    <strong>3.</strong> Complete the payment using your preferred method
+                                </p>
+                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                    <strong>4.</strong> You'll receive a confirmation email once payment is successful
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Footer -->
+                    <div style="padding: 30px; text-align: center; background-color: #f8fafc;">
+                        <p style="color: #6b7280; font-size: 16px; margin: 0 0 20px 0; line-height: 1.6;">
+                            Thank you for choosing <strong>Shree Krishna Beauty Products</strong>!
+                        </p>
+                        <p style="color: #0ea5e9; font-size: 20px; font-weight: 700; margin: 0;">
+                            We're excited to fulfill your order!
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+            
+            text_content = safe(f'Your order #{order_id} has been approved! Please complete your payment to proceed.')
+            html_content = safe(html_message.replace('\xa0', ' '))
+
+            email = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[user_email],
+            )
+            email.attach_alternative(html_content, "text/html")
+            email.encoding = 'utf-8'
+            email.send(fail_silently=True)
+            
+            logger.info(f"Order approval email sent to {user_email}")
+            
+    except Exception as e:
+        logger.error(f"Error sending order approval email: {str(e)}")
 
 class CartListCreateView(generics.ListCreateAPIView):
     serializer_class = CartItemSerializer
@@ -208,7 +313,7 @@ class AdminOrderApprovalView(APIView):
                         order.shipping_charge = 0
                     
                     # Send approval email
-                    self.send_order_approval_email(order)
+                    send_order_approval_email(order)
                 else:
                     order.status = 'rejected'
                     comment = comment or "Order rejected."
@@ -904,107 +1009,3 @@ class RazorpayWebhookView(APIView):
                 
         except Exception as e:
             logger.error(f"Error sending payment failure email: {str(e)}")
-
-    def send_order_approval_email(self, order):
-        """Send order approval email"""
-        try:
-            user_email = order.user.email
-            if user_email:
-                # Sanitize fields
-                def safe(val):
-                    return remove_non_ascii(str(val))
-                
-                order_id = safe(order.id)
-                order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
-                order_total = safe(order.total)
-                
-                subject = safe(f'Order Approved - Order #{order_id}')
-                html_message = f"""
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Order Approved</title>
-                </head>
-                <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
-                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
-                        <!-- Header -->
-                        <div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); padding: 40px 30px; text-align: center;">
-                            <h1 style="color: #ffffff; font-size: 32px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">Order Approved!</h1>
-                            <p style="color: #ffffff; font-size: 16px; margin: 10px 0 0 0; opacity: 0.9;">Your order has been approved by our team.</p>
-                        </div>
-                        
-                        <!-- Order Details -->
-                        <div style="padding: 30px; background-color: #f0f9ff; margin: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
-                            <h2 style="color: #0ea5e9; font-size: 20px; margin: 0 0 8px 0; font-weight: 600;">Order #{order_id}</h2>
-                            <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Placed on:</strong> {order_date}</p>
-                            <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Order Total:</strong> ₹{order_total}</p>
-                        </div>
-                        
-                        <!-- Approval Message -->
-                        <div style="padding: 0 30px 20px 30px;">
-                            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #bbf7d0;">
-                                <h3 style="color: #16a34a; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">✅ Order Approved!</h3>
-                                <p style="color: #374151; margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
-                                    Great news! Your order has been reviewed and approved by our team. 
-                                    All items are in stock and ready for processing.
-                                </p>
-                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                    <strong>Next Step:</strong> Please complete your payment as soon as possible to proceed with your order.
-                                </p>
-                            </div>
-                        </div>
-                        
-                        <!-- Payment Instructions -->
-                        <div style="padding: 0 30px 20px 30px;">
-                            <div style="background-color: #fefce8; padding: 20px; border-radius: 8px; border: 1px solid #fde047;">
-                                <h3 style="color: #eab308; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">💳 Complete Your Payment</h3>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                        <strong>1.</strong> Visit your order status page
-                                    </p>
-                                    <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                        <strong>2.</strong> Click on "Proceed to Payment"
-                                    </p>
-                                    <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                        <strong>3.</strong> Complete the payment using your preferred method
-                                    </p>
-                                    <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                        <strong>4.</strong> You'll receive a confirmation email once payment is successful
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Footer -->
-                        <div style="padding: 30px; text-align: center; background-color: #f8fafc;">
-                            <p style="color: #6b7280; font-size: 16px; margin: 0 0 20px 0; line-height: 1.6;">
-                                Thank you for choosing <strong>Shree Krishna Beauty Products</strong>!
-                            </p>
-                            <p style="color: #0ea5e9; font-size: 20px; font-weight: 700; margin: 0;">
-                                We're excited to fulfill your order!
-                            </p>
-                        </div>
-                    </div>
-                </body>
-                </html>
-                """
-                
-                text_content = safe(f'Your order #{order_id} has been approved! Please complete your payment to proceed.')
-                html_content = safe(html_message.replace('\xa0', ' '))
-
-                email = EmailMultiAlternatives(
-                    subject=subject,
-                    body=text_content,
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[user_email],
-                )
-                email.attach_alternative(html_content, "text/html")
-                email.encoding = 'utf-8'
-                email.send(fail_silently=True)
-                
-                logger.info(f"Order approval email sent to {user_email}")
-                
-        except Exception as e:
-            logger.error(f"Error sending order approval email: {str(e)}")
