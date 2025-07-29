@@ -624,10 +624,41 @@ class RazorpayWebhookView(APIView):
                 # Get order items through the ManyToMany relationship
                 order_items = order.items.all()
                 
-                item_lines = "".join([
-                    f"<tr><td style='padding:12px;border:1px solid #e5e7eb;text-align:left;'>{safe(cart_item.product.name)}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:center;'>{cart_item.quantity}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{cart_item.product.price}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{cart_item.product.price * cart_item.quantity}</td></tr>"
-                    for cart_item in order_items
-                ])
+                # Debug logging
+                logger.info(f"🔍 Order {order.id} has {order_items.count()} items")
+                for item in order_items:
+                    logger.info(f"🔍 Item: {item.product.name} x {item.quantity} = ₹{item.product.price * item.quantity}")
+                
+                # If no items found through ManyToMany, try alternative approach
+                if not order_items.exists():
+                    logger.warning(f"⚠️ No items found through ManyToMany for order {order.id}, trying alternative approach")
+                    # Try to get cart items directly for this user that might be associated with this order
+                    from django.db import connection
+                    with connection.cursor() as cursor:
+                        cursor.execute("""
+                            SELECT ci.id, ci.quantity, p.name, p.price 
+                            FROM cart_cartitem ci 
+                            JOIN product_product p ON ci.product_id = p.id 
+                            JOIN cart_order_items oi ON ci.id = oi.cartitem_id 
+                            WHERE oi.order_id = %s
+                        """, [order.id])
+                        items_data = cursor.fetchall()
+                        logger.info(f"🔍 Found {len(items_data)} items through direct query")
+                        
+                        # Create item lines from direct query results
+                        item_lines = "".join([
+                            f"<tr><td style='padding:12px;border:1px solid #e5e7eb;text-align:left;'>{safe(item_data[2])}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:center;'>{item_data[1]}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{item_data[3]}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{item_data[3] * item_data[1]}</td></tr>"
+                            for item_data in items_data
+                        ])
+                else:
+                    item_lines = "".join([
+                        f"<tr><td style='padding:12px;border:1px solid #e5e7eb;text-align:left;'>{safe(cart_item.product.name)}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:center;'>{cart_item.quantity}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{cart_item.product.price}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{cart_item.product.price * cart_item.quantity}</td></tr>"
+                        for cart_item in order_items
+                    ])
+                
+                # Debug logging for item_lines
+                logger.info(f"🔍 Generated item_lines length: {len(item_lines)}")
+                logger.info(f"🔍 Item_lines content: {item_lines[:200]}...")
                 
                 order_address = safe(order.address)
                 order_id = safe(order.id)
