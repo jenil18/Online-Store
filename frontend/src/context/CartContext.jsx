@@ -44,8 +44,9 @@ export const CartProvider = ({ children }) => {
 
       if (response.ok) {
         const data = await response.json();
+        
         const backendCartItems = data.map(item => ({
-          id: item.id,
+          id: item.product.id, // Use product.id instead of item.id
           name: item.product.name,
           price: parseFloat(item.product.price),
           image: item.product.image,
@@ -53,17 +54,8 @@ export const CartProvider = ({ children }) => {
           brand: item.product.category
         }));
         
-        // Merge with local cart items, giving priority to local items
-        setCartItems(prevItems => {
-          const merged = [...prevItems];
-          backendCartItems.forEach(backendItem => {
-            const existingIndex = merged.findIndex(item => item.id === backendItem.id);
-            if (existingIndex === -1) {
-              merged.push(backendItem);
-            }
-          });
-          return merged;
-        });
+        // Replace local cart with backend cart to avoid duplicates
+        setCartItems(backendCartItems);
       }
     } catch (err) {
       console.error('Error loading cart items:', err);
@@ -73,13 +65,10 @@ export const CartProvider = ({ children }) => {
   // Sync local cart to backend
   const syncCartToBackend = async () => {
     if (!token || cartItems.length === 0) {
-      console.log('No token or cart items, skipping sync');
       return;
     }
 
     try {
-      console.log('Syncing cart to backend, items:', cartItems);
-      
       // First, clear existing cart items in backend
       const existingResponse = await fetch(`${API_BASE}/cart/`, {
         headers: {
@@ -89,7 +78,6 @@ export const CartProvider = ({ children }) => {
 
       if (existingResponse.ok) {
         const existingItems = await existingResponse.json();
-        console.log('Existing cart items in backend:', existingItems);
         
         for (const item of existingItems) {
           await fetch(`${API_BASE}/cart/${item.id}/`, {
@@ -103,7 +91,6 @@ export const CartProvider = ({ children }) => {
 
       // Add current cart items to backend
       for (const item of cartItems) {
-        console.log('Adding item to backend:', item);
         const response = await fetch(`${API_BASE}/cart/`, {
           method: 'POST',
           headers: {
@@ -119,8 +106,6 @@ export const CartProvider = ({ children }) => {
         if (!response.ok) {
           const error = await response.json();
           console.error('Error adding item to backend:', error);
-        } else {
-          console.log('Item added to backend successfully');
         }
       }
     } catch (err) {
@@ -167,7 +152,6 @@ export const CartProvider = ({ children }) => {
     // Also clear cart from backend if user is logged in
     if (token) {
       try {
-        console.log('Clearing cart from backend...');
         const response = await fetch(`${API_BASE}/cart/`, {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -176,7 +160,6 @@ export const CartProvider = ({ children }) => {
 
         if (response.ok) {
           const existingItems = await response.json();
-          console.log('Found existing cart items in backend:', existingItems);
           
           // Delete each cart item from backend
           for (const item of existingItems) {
@@ -187,7 +170,6 @@ export const CartProvider = ({ children }) => {
               },
             });
           }
-          console.log('✅ Cart cleared from backend successfully');
         }
       } catch (err) {
         console.error('Error clearing cart from backend:', err);

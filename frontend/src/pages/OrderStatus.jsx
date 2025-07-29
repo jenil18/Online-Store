@@ -131,26 +131,14 @@ const OrderStatus = () => {
         paymentOrderData={paymentOrderData}
         onSuccess={async (response) => {
           try {
-            // Call backend to mark payment as completed
-            const completionResponse = await fetch(`${process.env.REACT_APP_API_URL}/api/cart/orders/${currentOrder.id}/complete-payment/`, {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('token')}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                razorpay_payment_id: response.razorpay_payment_id
-              }),
-            });
-            if (!completionResponse.ok) {
-              console.error('Failed to mark payment as completed');
-            }
-            // Fetch the latest order data (now completed)
-            const orderData = await completionResponse.json();
-            // Redirect to payment success page with latest order data
-            navigate('/payment-success', { state: { order: { ...currentOrder, ...orderData } } });
+            // Webhook will handle payment completion automatically
+            // No need to call complete-payment endpoint
+            console.log('Payment successful, webhook will handle completion');
+            
+            // Redirect to payment success page with current order data
+            navigate('/payment-success', { state: { order: currentOrder } });
           } catch (error) {
-            console.error('Error completing payment:', error);
+            console.error('Error handling payment success:', error);
             // Redirect to payment success page with fallback order data
             navigate('/payment-success', { state: { order: currentOrder } });
           }
