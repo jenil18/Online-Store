@@ -5,25 +5,36 @@ import { Trash2, ShoppingBag, Clock, CheckCircle, AlertCircle } from "lucide-rea
 import { useNavigate } from "react-router-dom";
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, clearCart, refreshCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart, refreshCart, resetCart } = useCart();
   const { placeOrderForApproval, loading, error } = useOrder();
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState("");
+  const [refreshingCart, setRefreshingCart] = useState(false);
+  const [resettingCart, setResettingCart] = useState(false);
+  const [removingItems, setRemovingItems] = useState(new Set());
+  const [updatingQuantities, setUpdatingQuantities] = useState(new Set());
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
   const navigate = useNavigate();
 
   const coupons = {
     SAVE10: 0.1,
   };
 
-  const applyCoupon = () => {
-    const normalized = coupon.trim().toUpperCase();
-    if (coupons[normalized]) {
-      setDiscount(coupons[normalized]);
-    } else {
-      setDiscount(0);
-      alert("Invalid coupon code.");
+  const applyCoupon = async () => {
+    setApplyingCoupon(true);
+    try {
+      const normalized = coupon.trim().toUpperCase();
+      if (coupons[normalized]) {
+        setDiscount(coupons[normalized]);
+      } else {
+        setDiscount(0);
+        alert("Invalid coupon code.");
+      }
+    } finally {
+      setApplyingCoupon(false);
     }
   };
 
@@ -65,28 +76,106 @@ export default function CartPage() {
     }
   };
 
-  const handleRemoveFromCart = (id) => {
-    removeFromCart(id);
+  const handleRemoveFromCart = async (id) => {
+    setRemovingItems(prev => new Set([...prev, id]));
+    try {
+      await removeFromCart(id);
+    } finally {
+      setRemovingItems(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
   };
 
-  const handleUpdateQuantity = (id, quantity) => {
-    updateQuantity(id, quantity);
+  const handleUpdateQuantity = async (id, quantity) => {
+    setUpdatingQuantities(prev => new Set([...prev, id]));
+    try {
+      await updateQuantity(id, quantity);
+    } finally {
+      setUpdatingQuantities(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    }
+  };
+
+  const handleRefreshCart = async () => {
+    setRefreshingCart(true);
+    try {
+      await refreshCart();
+    } finally {
+      setRefreshingCart(false);
+    }
+  };
+
+  const handleResetCart = async () => {
+    setResettingCart(true);
+    try {
+      await resetCart();
+    } finally {
+      setResettingCart(false);
+    }
   };
 
   const API_BASE = process.env.REACT_APP_API_URL;
 
   return (
-    <section className="mt-16 min-h-screen bg-gradient-to-r from-pink-400 to-purple-500 py-12 px-4 sm:px-6 md:px-8 lg:px-12">
+    <section className="mt-16 min-h-screen bg-gradient-to-r from-pink-400 to-purple-500 py-12 px-4 sm:px-6 md:px-8 lg:px-12 relative">
+      {/* Loading Overlay */}
+      {(refreshingCart || resettingCart || cartLoading) && (
+        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg p-6 flex items-center gap-3">
+            <div className="w-6 h-6 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+            <span className="text-gray-700 font-medium">
+              {refreshingCart ? 'Refreshing cart...' : 
+               resettingCart ? 'Resetting cart...' : 
+               'Loading...'}
+            </span>
+          </div>
+        </div>
+      )}
+      
       <div className="container mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-2">Shopping Cart</h1>
           <p className="text-white/80">Review your items and place your order</p>
-          <button
-            onClick={refreshCart}
-            className="mt-4 px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors duration-300"
-          >
-            Refresh Cart
-          </button>
+          <div className="mt-4 flex justify-center gap-4">
+            <button
+              onClick={handleRefreshCart}
+              disabled={refreshingCart}
+              className={`px-4 py-2 bg-white/20 text-white rounded-lg hover:bg-white/30 transition-colors duration-300 flex items-center gap-2 ${
+                refreshingCart ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+            >
+              {refreshingCart ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Refreshing...
+                </>
+              ) : (
+                'Refresh Cart'
+              )}
+            </button>
+            <button
+              onClick={handleResetCart}
+              disabled={resettingCart}
+              className={`px-4 py-2 bg-red-500/20 text-white rounded-lg hover:bg-red-500/30 transition-colors duration-300 flex items-center gap-2 ${
+                resettingCart ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
+            >
+              {resettingCart ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Resetting...
+                </>
+              ) : (
+                'Reset Cart'
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Cart Items */}
@@ -109,21 +198,36 @@ export default function CartPage() {
                     <p className="text-gray-800 font-medium mt-1">₹ {item.price}</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.quantity}
-                      onChange={(e) => handleUpdateQuantity(item.id, Number(e.target.value))}
-                      className="w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-center"
-                    />
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.quantity}
+                        onChange={(e) => handleUpdateQuantity(item.id, Number(e.target.value))}
+                        disabled={updatingQuantities.has(item.id)}
+                        className={`w-16 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 text-center ${
+                          updatingQuantities.has(item.id) ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                      />
+                      {updatingQuantities.has(item.id) && (
+                        <div className="absolute -top-1 -right-1 w-3 h-3 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                      )}
+                    </div>
                     <p className="text-gray-800 font-medium">
                       ₹ {(item.price * item.quantity)}
                     </p>
                     <button
                       onClick={() => handleRemoveFromCart(item.id)}
-                      className="p-2 text-gray-600 hover:text-red-500 transition-colors duration-300"
+                      disabled={removingItems.has(item.id)}
+                      className={`p-2 text-gray-600 hover:text-red-500 transition-colors duration-300 ${
+                        removingItems.has(item.id) ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
                     >
-                      <Trash2 className="w-5 h-5" />
+                      {removingItems.has(item.id) ? (
+                        <div className="w-5 h-5 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                      ) : (
+                        <Trash2 className="w-5 h-5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -159,9 +263,17 @@ export default function CartPage() {
                 />
                 <button
                   onClick={applyCoupon}
+                  disabled={applyingCoupon}
                   className="px-6 py-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors duration-300"
                 >
-                  Apply
+                  {applyingCoupon ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Applying...
+                    </>
+                  ) : (
+                    'Apply'
+                  )}
                 </button>
               </div>
               {discount > 0 && (

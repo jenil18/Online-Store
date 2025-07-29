@@ -45,18 +45,24 @@ export const CartProvider = ({ children }) => {
       if (response.ok) {
         const data = await response.json();
         
-        const backendCartItems = data.map(item => ({
-          id: item.product.id, // Use product.id instead of item.id
-          name: item.product.name,
-          price: parseFloat(item.product.price),
-          image: item.product.image,
-          quantity: item.quantity,
-          brand: item.product.category
-        }));
+        // Validate and filter cart items
+        const validCartItems = data
+          .filter(item => item.product && item.product.id && item.product.name)
+          .map(item => ({
+            id: item.product.id,
+            name: item.product.name,
+            price: parseFloat(item.product.price) || 0,
+            image: item.product.image || '',
+            quantity: parseInt(item.quantity) || 1,
+            brand: item.product.category || ''
+          }));
         
-        // Only replace if backend has items, otherwise keep local cart
-        if (backendCartItems.length > 0) {
-          setCartItems(backendCartItems);
+        // Only replace if backend has valid items
+        if (validCartItems.length > 0) {
+          console.log('Loading cart items from backend:', validCartItems);
+          setCartItems(validCartItems);
+        } else {
+          console.log('No valid cart items found in backend, keeping local cart');
         }
       }
     } catch (err) {
@@ -70,21 +76,31 @@ export const CartProvider = ({ children }) => {
     await loadCartItems();
   };
 
-  // Sync local cart to backend
-  const syncCartToBackend = async () => {
-    if (!token) return;
+  // Reset cart completely - clear both local and backend
+  const resetCart = async () => {
+    setCartItems([]);
+    localStorage.removeItem('cartItems');
+    
+    if (token) {
+      await clearBackendCart();
+    }
+  };
 
+  // Clear backend cart completely
+  const clearBackendCart = async () => {
+    if (!token) return;
+    
     try {
-      // First, clear existing cart items in backend
-      const existingResponse = await fetch(`${API_BASE}/cart/`, {
+      const response = await fetch(`${API_BASE}/cart/`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (existingResponse.ok) {
-        const existingItems = await existingResponse.json();
+      if (response.ok) {
+        const existingItems = await response.json();
         
+        // Delete each cart item from backend
         for (const item of existingItems) {
           await fetch(`${API_BASE}/cart/${item.id}/`, {
             method: 'DELETE',
@@ -94,6 +110,18 @@ export const CartProvider = ({ children }) => {
           });
         }
       }
+    } catch (err) {
+      console.error('Error clearing backend cart:', err);
+    }
+  };
+
+  // Sync local cart to backend
+  const syncCartToBackend = async () => {
+    if (!token) return;
+
+    try {
+      // First, clear existing cart items in backend
+      await clearBackendCart();
 
       // Add current cart items to backend
       for (const item of cartItems) {
@@ -140,11 +168,37 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (id) => {
+    // Remove from local state immediately
     setCartItems((prev) => prev.filter((item) => item.id !== id));
     
-    // Sync to backend after removing
+    // Also remove from backend immediately
     if (token) {
-      setTimeout(() => syncCartToBackend(), 100);
+      try {
+        const response = await fetch(`${API_BASE}/cart/`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const existingItems = await response.json();
+          
+          // Find and delete the specific item
+          for (const item of existingItems) {
+            if (item.product.id === id) {
+              await fetch(`${API_BASE}/cart/${item.id}/`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                },
+              });
+              break;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error removing item from backend:', err);
+      }
     }
   };
 
@@ -172,29 +226,7 @@ export const CartProvider = ({ children }) => {
     
     // Also clear cart from backend if user is logged in
     if (token) {
-      try {
-        const response = await fetch(`${API_BASE}/cart/`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const existingItems = await response.json();
-          
-          // Delete each cart item from backend
-          for (const item of existingItems) {
-            await fetch(`${API_BASE}/cart/${item.id}/`, {
-              method: 'DELETE',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            });
-          }
-        }
-      } catch (err) {
-        console.error('Error clearing cart from backend:', err);
-      }
+      await clearBackendCart();
     }
   };
 
@@ -226,6 +258,7 @@ export const CartProvider = ({ children }) => {
         syncCartToBackend,
         loading,
         refreshCart,
+        resetCart,
       }}
     >
       {children}
