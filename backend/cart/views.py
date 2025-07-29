@@ -120,14 +120,22 @@ class OrderListCreateView(generics.ListCreateAPIView):
                 
                 print(f"🔍 Order created with ID: {order.id}")
                 
-                # Save cart items and associate with order
+                # Create NEW cart items specifically for this order (copies, not references)
+                order_cart_items = []
                 for i, cart_item in enumerate(cart_items_to_create):
-                    cart_item.save()
-                    print(f"🔍 CartItem {i+1} saved with ID: {cart_item.id}, Product: {cart_item.product.name}, Qty: {cart_item.quantity}")
+                    # Create a new cart item specifically for this order
+                    order_cart_item = CartItem(
+                        user=self.request.user,
+                        product=cart_item.product,
+                        quantity=cart_item.quantity
+                    )
+                    order_cart_item.save()
+                    order_cart_items.append(order_cart_item)
+                    print(f"🔍 Order CartItem {i+1} saved with ID: {order_cart_item.id}, Product: {order_cart_item.product.name}, Qty: {order_cart_item.quantity}")
                 
-                # Associate cart items with order
-                order.items.set(cart_items_to_create)
-                print(f"🔍 Associated {len(cart_items_to_create)} cart items with order {order.id}")
+                # Associate the order-specific cart items with the order
+                order.items.set(order_cart_items)
+                print(f"🔍 Associated {len(order_cart_items)} order cart items with order {order.id}")
                 
                 # Verify the association
                 associated_items = order.items.all()
