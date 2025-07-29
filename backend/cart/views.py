@@ -465,18 +465,23 @@ class RazorpayWebhookView(APIView):
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             logger.info(f"✅ Razorpay client initialized with key: {settings.RAZORPAY_KEY_ID[:10]}...")
             
+            # Convert webhook body to string for signature verification
+            webhook_body_str = webhook_body.decode('utf-8')
+            
             # Verify webhook signature
             client.utility.verify_webhook_signature(
-                webhook_body, signature, settings.RAZORPAY_WEBHOOK_SECRET
+                webhook_body_str, signature, settings.RAZORPAY_WEBHOOK_SECRET
             )
             logger.info("✅ Webhook signature verification successful")
             
             # Parse the webhook data
-            webhook_data = json.loads(webhook_body)
+            webhook_data = json.loads(webhook_body_str)
             event = webhook_data.get('event')
             payload = webhook_data.get('payload', {})
             
             logger.info(f"🎯 Processing webhook event: {event}")
+            logger.info(f"📦 Event ID: {webhook_data.get('id', 'N/A')}")
+            logger.info(f"📦 Account ID: {webhook_data.get('account_id', 'N/A')}")
             logger.debug(f"📦 Webhook payload: {json.dumps(payload, indent=2)}")
             
             # Handle different events
@@ -489,6 +494,9 @@ class RazorpayWebhookView(APIView):
             elif event == 'order.paid':
                 logger.info("✅ Handling order.paid event")
                 self.handle_order_paid(payload)
+            elif event == 'payment.authorized':
+                logger.info("🔐 Handling payment.authorized event")
+                self.handle_payment_authorized(payload)
             else:
                 logger.warning(f"⚠️ Unhandled webhook event: {event}")
                 logger.warning(f"Available events in payload: {list(webhook_data.keys())}")
@@ -503,6 +511,27 @@ class RazorpayWebhookView(APIView):
             logger.error(f"Traceback: {traceback.format_exc()}")
             return HttpResponse(status=400)
     
+    def handle_payment_authorized(self, payload):
+        """Handle payment authorization (payment is authorized but not yet captured)"""
+        try:
+            payment_entity = payload['payment']['entity']
+            payment_id = payment_entity['id']
+            order_id = payment_entity.get('notes', {}).get('order_id')
+            
+            logger.info(f"Payment authorized - Payment ID: {payment_id}, Order ID: {order_id}")
+            
+            if order_id:
+                try:
+                    order = Order.objects.get(id=order_id)
+                    # Don't change order status yet, just log the authorization
+                    logger.info(f"Order {order_id} payment authorized but not yet captured")
+                    
+                except Order.DoesNotExist:
+                    logger.error(f"Order {order_id} not found in database")
+                    
+        except Exception as e:
+            logger.error(f"Error handling payment authorized: {str(e)}")
+
     def handle_payment_captured(self, payload):
         """Handle successful payment capture"""
         try:
