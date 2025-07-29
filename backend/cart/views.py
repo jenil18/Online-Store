@@ -118,12 +118,22 @@ class OrderListCreateView(generics.ListCreateAPIView):
                     address=user_address
                 )
                 
-                # Save cart items and associate with order
-                for cart_item in cart_items_to_create:
-                    cart_item.save()
+                print(f"🔍 Order created with ID: {order.id}")
                 
+                # Save cart items and associate with order
+                for i, cart_item in enumerate(cart_items_to_create):
+                    cart_item.save()
+                    print(f"🔍 CartItem {i+1} saved with ID: {cart_item.id}, Product: {cart_item.product.name}, Qty: {cart_item.quantity}")
+                
+                # Associate cart items with order
                 order.items.set(cart_items_to_create)
-                print(f"Order created successfully: {order.id} with {len(cart_items_to_create)} items")
+                print(f"🔍 Associated {len(cart_items_to_create)} cart items with order {order.id}")
+                
+                # Verify the association
+                associated_items = order.items.all()
+                print(f"🔍 Order {order.id} now has {associated_items.count()} associated items")
+                for item in associated_items:
+                    print(f"🔍 Associated item: {item.product.name} x {item.quantity}")
                 
                 return order
         except Exception as e:
@@ -626,12 +636,20 @@ class RazorpayWebhookView(APIView):
                 
                 # Debug logging
                 logger.info(f"🔍 Order {order.id} has {order_items.count()} items")
+                logger.info(f"🔍 Order status: {order.status}, payment_status: {order.payment_status}")
+                logger.info(f"🔍 Order user: {order.user.username}")
+                
                 for item in order_items:
                     logger.info(f"🔍 Item: {item.product.name} x {item.quantity} = ₹{item.product.price * item.quantity}")
                 
                 # If no items found through ManyToMany, try alternative approach
                 if not order_items.exists():
                     logger.warning(f"⚠️ No items found through ManyToMany for order {order.id}, trying alternative approach")
+                    
+                    # First, let's check if there are any cart items for this user
+                    user_cart_items = CartItem.objects.filter(user=order.user)
+                    logger.info(f"🔍 User {order.user.username} has {user_cart_items.count()} total cart items")
+                    
                     # Try to get cart items directly for this user that might be associated with this order
                     from django.db import connection
                     with connection.cursor() as cursor:
@@ -644,6 +662,11 @@ class RazorpayWebhookView(APIView):
                         """, [order.id])
                         items_data = cursor.fetchall()
                         logger.info(f"🔍 Found {len(items_data)} items through direct query")
+                        
+                        # Also check the junction table directly
+                        cursor.execute("SELECT cartitem_id FROM cart_order_items WHERE order_id = %s", [order.id])
+                        junction_items = cursor.fetchall()
+                        logger.info(f"🔍 Junction table has {len(junction_items)} entries for order {order.id}")
                         
                         # Create item lines from direct query results
                         item_lines = "".join([
