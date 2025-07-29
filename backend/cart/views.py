@@ -28,8 +28,22 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 def remove_non_ascii(text):
-    """Remove non-ASCII characters from text"""
-    return ''.join(char for char in text if ord(char) < 128)
+    """Remove non-ASCII characters from text, but preserve important symbols like ₹"""
+    # Define characters to preserve
+    preserve_chars = {'₹'}  # Rupee symbol
+    
+    result = ''
+    for char in text:
+        # Keep ASCII characters (ord < 128)
+        if ord(char) < 128:
+            result += char
+        # Keep specific important Unicode characters
+        elif char in preserve_chars:
+            result += char
+        # Replace other non-ASCII characters with space
+        else:
+            result += ' '
+    return result
 
 def send_order_approval_email(order):
     """Send order approval email"""
@@ -41,7 +55,9 @@ def send_order_approval_email(order):
                 return remove_non_ascii(str(val))
             
             order_id = safe(order.id)
-            order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
+            # Convert UTC to IST (UTC+5:30)
+            ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
+            order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p IST'))
             order_total = safe(order.total)
             
             subject = safe(f'Order Approved - Order #{order_id}')
@@ -86,19 +102,19 @@ def send_order_approval_email(order):
                     <div style="padding: 0 30px 20px 30px;">
                         <div style="background-color: #fefce8; padding: 20px; border-radius: 8px; border: 1px solid #fde047;">
                             <h3 style="color: #eab308; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">💳 Complete Your Payment</h3>
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                    <strong>1.</strong> Visit your order status page
-                                </p>
-                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                    <strong>2.</strong> Click on "Proceed to Payment"
-                                </p>
-                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                    <strong>3.</strong> Complete the payment using your preferred method
-                                </p>
-                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
-                                    <strong>4.</strong> You'll receive a confirmation email once payment is successful
-                                </p>
+                            <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
+                                <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                                    <strong>1.</strong> Visit order status page
+                                </span>
+                                <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                                    <strong>2.</strong> Click "Proceed to Payment"
+                                </span>
+                                <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                                    <strong>3.</strong> Complete payment
+                                </span>
+                                <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                                    <strong>4.</strong> Get confirmation email
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -480,7 +496,10 @@ class PaymentCompletionView(APIView):
                     order_total = safe(order.total)
                     shipping_charge = safe(order.shipping_charge or 0)
                     total_paid = safe(order.total + (order.shipping_charge or 0))
-                    order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
+                    # Convert UTC to IST (UTC+5:30)
+                    ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
+                    order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p IST'))
+                    transaction_id = safe(order.transaction_id or 'N/A')
 
                     html_message = f"""
                     <div style='font-family:sans-serif;background:#f7fafc;padding:32px;'>
@@ -806,7 +825,9 @@ class RazorpayWebhookView(APIView):
                 order_total = safe(order.total)
                 shipping_charge = safe(order.shipping_charge or 0)
                 total_paid = safe(order.total + (order.shipping_charge or 0))
-                order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
+                # Convert UTC to IST (UTC+5:30)
+                ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
+                order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p IST'))
                 transaction_id = safe(order.transaction_id or 'N/A')
 
                 html_message = f"""
@@ -914,7 +935,9 @@ class RazorpayWebhookView(APIView):
                     return remove_non_ascii(str(val))
                 
                 order_id = safe(order.id)
-                order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
+                # Convert UTC to IST (UTC+5:30)
+                ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
+                order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p IST'))
                 order_total = safe(order.total)
                 
                 subject = safe(f'Payment Failed - Order #{order_id}')
