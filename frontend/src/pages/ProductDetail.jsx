@@ -12,6 +12,7 @@ const ProductDetail = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const API_BASE = process.env.REACT_APP_API_URL;
 
@@ -53,11 +54,20 @@ const ProductDetail = () => {
   }, [product, API_BASE]);
 
   const handleAddToCart = async () => {
-    addToCart(product);
-    await syncCartToBackend();
-    setAdded(true);
-    setShowPopup(true);
-    setTimeout(() => setShowPopup(false), 2500);
+    if (addingToCart) return; // Prevent multiple clicks
+    
+    setAddingToCart(true);
+    try {
+      addToCart(product);
+      await syncCartToBackend();
+      setAdded(true);
+      setShowPopup(true);
+      setTimeout(() => setShowPopup(false), 2500);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   if (loading) return <div className="min-h-screen flex justify-center items-center">Loading...</div>;
@@ -105,9 +115,19 @@ const ProductDetail = () => {
           <div className="flex flex-wrap gap-4 pt-4">
             <button
               onClick={handleAddToCart}
-              className="px-6 py-3 bg-black text-white rounded-full hover:bg-black/70 transition"
+              disabled={addingToCart}
+              className={`px-6 py-3 bg-black text-white rounded-full hover:bg-black/70 transition flex items-center gap-2 ${
+                addingToCart ? 'opacity-70 cursor-not-allowed' : ''
+              }`}
             >
-              Add to Cart
+              {addingToCart ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Adding...
+                </>
+              ) : (
+                'Add to Cart'
+              )}
             </button>
 
             {/* View Cart button → only visible if added */}

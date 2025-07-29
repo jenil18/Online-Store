@@ -1,5 +1,25 @@
 // src/components/ProductCard.jsx
+import { useState } from 'react';
+import { useCart } from '../context/CartContext';
+
 export default function ProductCard({ product }) {
+  const { addToCart, syncCartToBackend } = useCart();
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  const handleAddToCart = async () => {
+    if (addingToCart) return; // Prevent multiple clicks
+    
+    setAddingToCart(true);
+    try {
+      addToCart(product);
+      await syncCartToBackend();
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+    } finally {
+      setAddingToCart(false);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col">
       <img
@@ -16,8 +36,21 @@ export default function ProductCard({ product }) {
         <div className="text-gray-500 text-xs sm:text-sm">
           M.R.P.: <span className="line-through">&#8377; {product.original_price}</span>
         </div>
-        <button className="mt-2 px-3 py-2 sm:px-4 sm:py-2 rounded-md bg-pink-500 text-white font-medium hover:bg-pink-600 transition text-sm sm:text-base">
-          Add to Cart
+        <button 
+          onClick={handleAddToCart}
+          disabled={addingToCart}
+          className={`mt-2 px-3 py-2 sm:px-4 sm:py-2 rounded-md bg-pink-500 text-white font-medium hover:bg-pink-600 transition text-sm sm:text-base flex items-center justify-center gap-2 ${
+            addingToCart ? 'opacity-70 cursor-not-allowed' : ''
+          }`}
+        >
+          {addingToCart ? (
+            <>
+              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              Adding...
+            </>
+          ) : (
+            'Add to Cart'
+          )}
         </button>
       </div>
     </div>
