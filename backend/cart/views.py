@@ -531,7 +531,7 @@ class RazorpayWebhookView(APIView):
                     
         except Exception as e:
             logger.error(f"Error handling payment authorized: {str(e)}")
-
+    
     def handle_payment_captured(self, payload):
         """Handle successful payment capture"""
         try:
@@ -621,9 +621,12 @@ class RazorpayWebhookView(APIView):
                 def safe(val):
                     return remove_non_ascii(str(val))
                 
+                # Get order items through the ManyToMany relationship
+                order_items = order.items.all()
+                
                 item_lines = "".join([
-                    f"<tr><td style='padding:12px;border:1px solid #e5e7eb;text-align:left;'>{safe(item.product.name)}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:center;'>{item.quantity}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{item.product.price}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{item.product.price * item.quantity}</td></tr>"
-                    for item in order.items.all()
+                    f"<tr><td style='padding:12px;border:1px solid #e5e7eb;text-align:left;'>{safe(cart_item.product.name)}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:center;'>{cart_item.quantity}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{cart_item.product.price}</td><td style='padding:12px;border:1px solid #e5e7eb;text-align:right;'>₹{cart_item.product.price * cart_item.quantity}</td></tr>"
+                    for cart_item in order_items
                 ])
                 
                 order_address = safe(order.address)
@@ -734,28 +737,102 @@ class RazorpayWebhookView(APIView):
         try:
             user_email = order.user.email
             if user_email:
-                subject = f"Payment Failed - Order #{order.id}"
+                # Sanitize fields
+                def safe(val):
+                    return remove_non_ascii(str(val))
+                
+                order_id = safe(order.id)
+                order_date = safe(order.created_at.strftime('%d %b %Y, %I:%M %p'))
+                order_total = safe(order.total)
+                
+                subject = safe(f'Payment Failed - Order #{order_id}')
                 html_message = f"""
-                <div style='font-family:sans-serif;background:#f7fafc;padding:32px;'>
-                    <div style='max-width:600px;margin:auto;background:white;border-radius:16px;box-shadow:0 4px 24px #0001;padding:32px;'>
-                        <h1 style='color:#ef4444;text-align:center;font-size:2.5rem;margin-bottom:8px;'>Payment Failed</h1>
-                        <p style='text-align:center;font-size:1.2rem;color:#555;margin-bottom:24px;'>We couldn't process your payment.</p>
-                        <div style='background:#fef2f2;padding:16px 24px;border-radius:12px;margin-bottom:24px;'>
-                            <h2 style='color:#dc2626;margin:0 0 8px 0;'>Order #{order.id}</h2>
-                            <p style='margin:0;color:#555;'>Please try again or contact support.</p>
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Payment Failed</title>
+                </head>
+                <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                        <!-- Header -->
+                        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="color: #ffffff; font-size: 32px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">Payment Failed</h1>
+                            <p style="color: #ffffff; font-size: 16px; margin: 10px 0 0 0; opacity: 0.9;">We couldn't process your payment for this order.</p>
                         </div>
-                        <p style='text-align:center;color:#555;'>You can retry the payment from your order history.</p>
+                        
+                        <!-- Order Details -->
+                        <div style="padding: 30px; background-color: #fef2f2; margin: 20px; border-radius: 8px; border-left: 4px solid #dc2626;">
+                            <h2 style="color: #dc2626; font-size: 20px; margin: 0 0 8px 0; font-weight: 600;">Order #{order_id}</h2>
+                            <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Placed on:</strong> {order_date}</p>
+                            <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Order Total:</strong> ₹{order_total}</p>
+                        </div>
+                        
+                        <!-- Failure Message -->
+                        <div style="padding: 0 30px 20px 30px;">
+                            <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; border: 1px solid #fecaca;">
+                                <h3 style="color: #dc2626; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">What happened?</h3>
+                                <p style="color: #374151; margin: 0 0 15px 0; font-size: 16px; line-height: 1.6;">
+                                    Your payment could not be processed. This could be due to:
+                                </p>
+                                <ul style="color: #374151; margin: 0 0 15px 0; font-size: 16px; line-height: 1.6; padding-left: 20px;">
+                                    <li>Insufficient funds in your account</li>
+                                    <li>Card details entered incorrectly</li>
+                                    <li>Network connectivity issues</li>
+                                    <li>Bank declined the transaction</li>
+                                </ul>
+                                <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                    <strong>Don't worry!</strong> Your order is still saved and you can retry the payment.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div style="padding: 0 30px 20px 30px;">
+                            <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; border: 1px solid #0ea5e9;">
+                                <h3 style="color: #0ea5e9; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">What can you do?</h3>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                        <strong>1.</strong> Check your payment method and try again
+                                    </p>
+                                    <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                        <strong>2.</strong> Visit your order history to retry payment
+                                    </p>
+                                    <p style="color: #374151; margin: 0; font-size: 16px; line-height: 1.6;">
+                                        <strong>3.</strong> Contact our support team if the issue persists
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div style="padding: 30px; text-align: center; background-color: #f8fafc;">
+                            <p style="color: #6b7280; font-size: 16px; margin: 0 0 20px 0; line-height: 1.6;">
+                                Need help? Reply to this email or contact our support team.
+                            </p>
+                            <p style="color: #0ea5e9; font-size: 20px; font-weight: 700; margin: 0;">
+                                We're here to help!
+                            </p>
+                        </div>
                     </div>
-                </div>
+                </body>
+                </html>
                 """
                 
-                send_mail(
+                text_content = safe(f'Your payment for order #{order_id} failed. Please try again or contact support.')
+                html_content = safe(html_message.replace('\xa0', ' '))
+
+                email = EmailMultiAlternatives(
                     subject=subject,
-                    message="",
-                    from_email=settings.EMAIL_HOST_USER,
-                    recipient_list=[user_email],
-                    html_message=html_message
+                    body=text_content,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[user_email],
                 )
+                email.attach_alternative(html_content, "text/html")
+                email.encoding = 'utf-8'
+                email.send(fail_silently=True)
+                
                 logger.info(f"Payment failure email sent to {user_email}")
                 
         except Exception as e:
