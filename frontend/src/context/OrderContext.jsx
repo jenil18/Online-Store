@@ -16,8 +16,6 @@ export const OrderProvider = ({ children }) => {
   const [currentOrder, setCurrentOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [orderHistory, setOrderHistory] = useState([]);
-  const [loadingOrderHistory, setLoadingOrderHistory] = useState(false);
   const { token } = useAuth();
   const { cartItems } = useCart();
 
@@ -238,32 +236,6 @@ export const OrderProvider = ({ children }) => {
     }
   }, [currentOrder]);
 
-  // Fetch order history (completed orders)
-  const getOrderHistory = async () => {
-    if (!token) return [];
-    setLoadingOrderHistory(true);
-    try {
-      const response = await fetch(`${API_BASE}/order-history/`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setOrderHistory(data);
-        return data;
-      } else {
-        setOrderHistory([]);
-        return [];
-      }
-    } catch (err) {
-      setOrderHistory([]);
-      return [];
-    } finally {
-      setLoadingOrderHistory(false);
-    }
-  };
-
   const value = {
     currentOrder,
     loading,
@@ -275,10 +247,6 @@ export const OrderProvider = ({ children }) => {
     approveOrder,
     rejectOrder,
     clearCurrentOrder,
-    // Order history
-    orderHistory,
-    loadingOrderHistory,
-    getOrderHistory,
   };
 
   return (

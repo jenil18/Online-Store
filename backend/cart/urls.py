@@ -3,7 +3,7 @@ from .views import (
     CartListCreateView, CartItemUpdateDeleteView, OrderListCreateView, 
     OrderDetailView, AdminOrderListView, AdminOrderApprovalView, 
     UserOrderStatusView, CheckoutView, RazorpayOrderCreateView, 
-    PaymentCompletionView, RazorpayWebhookView, OrderHistoryView
+    PaymentCompletionView, RazorpayWebhookView
 )
 
 urlpatterns = [
@@ -18,5 +18,4 @@ urlpatterns = [
     path('orders/<int:order_id>/razorpay-order/', RazorpayOrderCreateView.as_view(), name='razorpay-order-create'),
     path('orders/<int:order_id>/complete-payment/', PaymentCompletionView.as_view(), name='payment-completion'),
     path('webhook/razorpay/', RazorpayWebhookView.as_view(), name='razorpay-webhook'),
-    path('order-history/', OrderHistoryView.as_view(), name='order-history'),
 ] 

@@ -57,7 +57,7 @@ def send_order_approval_email(order):
             order_id = safe(order.id)
             # Convert UTC to IST (UTC+5:30)
             ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
-            order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p IST'))
+            order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p'))
             order_total = safe(order.total)
             
             subject = safe(f'Order Approved - Order #{order_id}')
@@ -104,16 +104,10 @@ def send_order_approval_email(order):
                             <h3 style="color: #eab308; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">💳 Complete Your Payment</h3>
                             <div style="display: flex; flex-wrap: wrap; gap: 15px; align-items: center;">
                                 <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                                    <strong>1.</strong> Visit order status page
+                                    <strong>1.</strong> Visit "Orders" page
                                 </span>
                                 <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                                    <strong>2.</strong> Click "Proceed to Payment"
-                                </span>
-                                <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                                    <strong>3.</strong> Complete payment
-                                </span>
-                                <span style="color: #374151; font-size: 16px; line-height: 1.6; background: #ffffff; padding: 8px 12px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                                    <strong>4.</strong> Get confirmation email
+                                    <strong>2.</strong> Complete your payment
                                 </span>
                             </div>
                         </div>
@@ -498,7 +492,7 @@ class PaymentCompletionView(APIView):
                     total_paid = safe(order.total + (order.shipping_charge or 0))
                     # Convert UTC to IST (UTC+5:30)
                     ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
-                    order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p IST'))
+                    order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p'))
                     transaction_id = safe(order.transaction_id or 'N/A')
 
                     html_message = f"""
@@ -524,9 +518,9 @@ class PaymentCompletionView(APIView):
                                 </tbody>
                             </table>
                             <div style='margin-bottom:24px;'>
-                                <p style='font-size:1.1rem;'><b>Subtotal:</b> ₹{order_total}</p>
-                                <p style='font-size:1.1rem;'><b>Shipping:</b> ₹{shipping_charge}</p>
-                                <p style='font-size:1.3rem;color:#22c55e;'><b>Total Paid:</b> ₹{total_paid}</p>
+                                <p style='font-size:1.1rem;'><b>Subtotal : </b> ₹{order_total}</p>
+                                <p style='font-size:1.1rem;'><b>Shipping : </b> ₹{shipping_charge}</p>
+                                <p style='font-size:1.3rem;color:#22c55e;'><b>Total Paid : </b> ₹{total_paid}</p>
                             </div>
                             <div style='background:#fef9c3;padding:16px 24px;border-radius:12px;margin-bottom:24px;'>
                                 <h3 style='color:#eab308;margin:0 0 8px 0;'>Delivery Address</h3>
@@ -565,14 +559,6 @@ class PaymentCompletionView(APIView):
         except Exception as e:
             print(f"[PaymentCompletionView] Exception: {str(e)}")
             return Response({"error": f"Failed to complete payment: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-class OrderHistoryView(generics.ListAPIView):
-    serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_queryset(self):
-        # Get all orders for the user, limited to 20 most recent
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')[:20]
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RazorpayWebhookView(APIView):
@@ -827,7 +813,7 @@ class RazorpayWebhookView(APIView):
                 total_paid = safe(order.total + (order.shipping_charge or 0))
                 # Convert UTC to IST (UTC+5:30)
                 ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
-                order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p IST'))
+                order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p'))
                 transaction_id = safe(order.transaction_id or 'N/A')
 
                 html_message = f"""
@@ -874,15 +860,15 @@ class RazorpayWebhookView(APIView):
                         <div style="padding: 0 30px 20px 30px;">
                             <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb;">
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                    <span style="color: #374151; font-size: 16px;">Subtotal:</span>
+                                    <span style="color: #374151; font-size: 16px;">Subtotal : </span>
                                     <span style="color: #374151; font-size: 16px; font-weight: 600;">₹{order_total}</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                    <span style="color: #374151; font-size: 16px;">Shipping:</span>
+                                    <span style="color: #374151; font-size: 16px;">Shipping : </span>
                                     <span style="color: #374151; font-size: 16px; font-weight: 600;">₹{shipping_charge}</span>
                                 </div>
                                 <div style="display: flex; justify-content: space-between; padding-top: 12px; border-top: 2px solid #e5e7eb; margin-top: 12px;">
-                                    <span style="color: #22c55e; font-size: 18px; font-weight: 700;">Total Paid:</span>
+                                    <span style="color: #22c55e; font-size: 18px; font-weight: 700;">Total Paid : </span>
                                     <span style="color: #22c55e; font-size: 18px; font-weight: 700;">₹{total_paid}</span>
                                 </div>
                             </div>

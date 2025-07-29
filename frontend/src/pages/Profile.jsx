@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Package, DollarSign, Calendar, MapPin } from "lucide-react";
-import { useOrder } from "../context/OrderContext";
+import { User, Mail, Phone, MapPin, Building, Edit3, Save, X, LogOut, Shield, Settings } from "lucide-react";
 
 const Profile = () => {
   const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
-  const { orderHistory, loadingOrderHistory, getOrderHistory } = useOrder();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editableUser, setEditableUser] = useState(null);
@@ -17,27 +15,8 @@ const Profile = () => {
   useEffect(() => {
     if (user) {
       setEditableUser(user);
-      getOrderHistory();
     }
   }, [user]);
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green-600 bg-green-100 border-green-200';
-      default:
-        return 'text-gray-600 bg-gray-100 border-gray-200';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'completed':
-        return <Package className="w-4 h-4" />;
-      default:
-        return <Package className="w-4 h-4" />;
-    }
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,140 +41,168 @@ const Profile = () => {
     navigate("/auth");
   };
 
-  if (!editableUser) return <div>Loading profile...</div>;
+  if (!editableUser) return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+    </div>
+  );
+
+  const profileFields = [
+    { key: 'username', label: 'Username', icon: User, type: 'text' },
+    { key: 'email', label: 'Email', icon: Mail, type: 'email' },
+    { key: 'phone', label: 'Phone', icon: Phone, type: 'tel' },
+    { key: 'altPhone', label: 'Alternative Phone', icon: Phone, type: 'tel' },
+    { key: 'salon', label: 'Salon Name', icon: Building, type: 'text' },
+    { key: 'address', label: 'Address', icon: MapPin, type: 'text' },
+    { key: 'city', label: 'City', icon: MapPin, type: 'text' },
+  ];
 
   return (
-    <section className="min-h-screen bg-gray-400 py-16 px-4 md:px-20">
-      <div className="mt-[50px] max-w-5xl mx-auto bg-white p-8 rounded-3xl shadow-lg">
-        <h1 className="text-4xl font-bold mb-8 text-center">My Profile</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-6">
+            <User className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-4xl font-bold text-gray-800 mb-2">My Profile</h1>
+          <p className="text-gray-600 text-lg">Manage your account information</p>
+        </div>
 
-        {/* Profile Information */}
-        <div className="grid md:grid-cols-2 gap-8 mb-12">
-          <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Profile Details</h2>
-
-            {isEditing ? (
-              <form onSubmit={handleSave} className="space-y-4">
-                {["username", "email", "phone", "altPhone", "salon", "address", "city"].map((field) => (
-                  <div key={field}>
-                    <label className="block text-gray-600 capitalize">{field}</label>
-                    <input
-                      type="text"
-                      name={field}
-                      value={editableUser[field] || ""}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-gray-400"
-                    />
-                  </div>
-                ))}
-                {error && <div className="text-red-500 text-sm">{error}</div>}
-                {success && <div className="text-green-600 text-sm">{success}</div>}
-                <div className="flex gap-4">
-                  <button
-                    type="submit"
-                    className="px-6 py-2 rounded-full bg-black text-white hover:bg-gray-600 transition"
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="px-6 py-2 rounded-full bg-gray-300 text-gray-700 hover:bg-gray-400 transition"
-                  >
-                    Cancel
-                  </button>
+        {/* Main Content */}
+        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
+          {/* Profile Header */}
+          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-white" />
                 </div>
-              </form>
-            ) : (
-              <div className="space-y-3 text-gray-700 text-lg">
-                {["username", "email", "phone", "altPhone", "salon", "address", "city"].map((field) => (
-                  <p key={field}>
-                    <span className="font-semibold capitalize">{field}:</span>{" "}
-                    {editableUser[field] || "—"}
-                  </p>
-                ))}
-                <div className="text-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-white">{editableUser.username}</h2>
+                  <p className="text-indigo-100">{editableUser.email}</p>
+                </div>
+              </div>
+              <div className="flex space-x-3">
+                {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="mt-4 px-6 py-2 rounded-full bg-black text-white hover:bg-black/40 transition"
+                    className="flex items-center space-x-2 px-6 py-3 bg-white/20 hover:bg-white/30 text-white rounded-xl transition-all duration-200"
                   >
-                    Edit Profile
+                    <Edit3 className="w-4 h-4" />
+                    <span>Edit</span>
                   </button>
-                </div>
-                 {/* Logout */}
-                  <div className="text-center">
+                ) : (
+                  <div className="flex space-x-3">
                     <button
-                      onClick={handleLogout}
-                      className="px-8 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition"
+                      onClick={handleSave}
+                      className="flex items-center space-x-2 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl transition-all duration-200"
                     >
-                      Logout
+                      <Save className="w-4 h-4" />
+                      <span>Save</span>
+                    </button>
+                    <button
+                      onClick={() => setIsEditing(false)}
+                      className="flex items-center space-x-2 px-6 py-3 bg-gray-500 hover:bg-gray-600 text-white rounded-xl transition-all duration-200"
+                    >
+                      <X className="w-4 h-4" />
+                      <span>Cancel</span>
                     </button>
                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Form */}
+          <div className="p-8">
+            {isEditing ? (
+              <form onSubmit={handleSave} className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {profileFields.map((field) => (
+                    <div key={field.key} className="space-y-2">
+                      <label className="flex items-center space-x-2 text-sm font-medium text-gray-700">
+                        <field.icon className="w-4 h-4" />
+                        <span>{field.label}</span>
+                      </label>
+                      <input
+                        type={field.type}
+                        name={field.key}
+                        value={editableUser[field.key] || ""}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200"
+                        placeholder={`Enter your ${field.label.toLowerCase()}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+                
+                {error && (
+                  <div className="flex items-center space-x-2 p-4 bg-red-50 border border-red-200 rounded-xl">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-red-700">{error}</span>
+                  </div>
+                )}
+                
+                {success && (
+                  <div className="flex items-center space-x-2 p-4 bg-green-50 border border-green-200 rounded-xl">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-green-700">{success}</span>
+                  </div>
+                )}
+              </form>
+            ) : (
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  {profileFields.map((field) => (
+                    <div key={field.key} className="bg-gray-50 rounded-xl p-6">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <field.icon className="w-5 h-5 text-indigo-600" />
+                        <span className="text-sm font-medium text-gray-600">{field.label}</span>
+                      </div>
+                      <p className="text-gray-800 font-medium">
+                        {editableUser[field.key] || "Not provided"}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
 
-          {/* Order History */}
-          <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">Order History</h2>
-            <div className="space-y-4">
-              {loadingOrderHistory ? (
-                <div className="text-center py-8">Loading orders...</div>
-              ) : orderHistory.length === 0 ? (
-                <div className="text-gray-600 italic">No orders found.</div>
-              ) : (
-                <div className="space-y-4">
-                  {orderHistory.map((order) => (
-                    <div key={order.id} className="bg-gray-50 p-6 rounded-lg shadow-md">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-xl font-bold text-gray-800">Order #{order.id}</h3>
-                        <span className={`px-3 py-1 rounded-full text-sm font-semibold border flex items-center ${getStatusColor(order.status)}`}>
-                          {getStatusIcon(order.status)}
-                          <span className="ml-1">{order.status.toUpperCase()}</span>
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-gray-700 text-sm">
-                        <div className="flex items-center">
-                          <Calendar className="w-4 h-4 mr-2 text-gray-500" />
-                          <span><strong>Date:</strong> {new Date(order.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <DollarSign className="w-4 h-4 mr-2 text-gray-500" />
-                          <span><strong>Total:</strong> ₹{order.total}</span>
-                        </div>
-                        <div className="flex items-center">
-                          <Package className="w-4 h-4 mr-2 text-gray-500" />
-                          <span><strong>Items:</strong> {order.items?.length || 0} products</span>
-                        </div>
-                        <div className="flex items-center">
-                          <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                          <span><strong>Address:</strong> {order.address}</span>
-                        </div>
-                      </div>
-                      {order.items && order.items.length > 0 && (
-                        <div className="mt-4 p-3 bg-white rounded-lg">
-                          <h4 className="font-semibold text-gray-800 mb-2">Items:</h4>
-                          <div className="space-y-1">
-                            {order.items.map((item, index) => (
-                              <div key={index} className="flex justify-between text-sm">
-                                <span className="text-gray-600">{item.product?.name || 'Product'} x {item.quantity}</span>
-                                <span className="font-semibold">₹{(item.product?.price || 0) * (item.quantity || 0)}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+          {/* Action Buttons */}
+          <div className="border-t border-gray-100 p-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Shield className="w-4 h-4" />
+                  <span className="text-sm">Account Security</span>
                 </div>
-              )}
+                <div className="flex items-center space-x-2 text-gray-600">
+                  <Settings className="w-4 h-4" />
+                  <span className="text-sm">Privacy Settings</span>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleLogout}
+                className="flex items-center space-x-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
             </div>
           </div>
         </div>
 
-       
+        {/* Additional Info */}
+        <div className="mt-8 text-center">
+          <p className="text-gray-500 text-sm">
+            Need help? Contact our support team for assistance
+          </p>
+        </div>
       </div>
-    </section>
+    </div>
   );
 };
 
