@@ -436,52 +436,71 @@ class RazorpayWebhookView(APIView):
     """
     Handle Razorpay webhooks for payment events
     """
+    permission_classes = [permissions.AllowAny]  # Allow webhooks without authentication
+    
     def post(self, request):
-        logger.info("Received Razorpay webhook request")
-        logger.debug(f"Webhook headers: {dict(request.headers)}")
+        logger.info("=== RAZORPAY WEBHOOK RECEIVED ===")
+        logger.info(f"Request method: {request.method}")
+        logger.info(f"Request URL: {request.build_absolute_uri()}")
+        logger.info(f"Content-Type: {request.content_type}")
+        logger.info(f"Content-Length: {len(request.body)}")
+        logger.debug(f"All headers: {dict(request.headers)}")
         
         # Get the webhook signature
         signature = request.headers.get('X-Razorpay-Signature')
         if not signature:
-            logger.error("No signature found in webhook headers")
+            logger.error("❌ No X-Razorpay-Signature found in webhook headers")
+            logger.error(f"Available headers: {list(request.headers.keys())}")
             return HttpResponse(status=400)
+        
+        logger.info(f"✅ Webhook signature found: {signature[:20]}...")
         
         # Get the webhook body
         webhook_body = request.body
         logger.debug(f"Webhook body length: {len(webhook_body)}")
+        logger.debug(f"Webhook body preview: {webhook_body[:200]}...")
         
         try:
             # Initialize Razorpay client
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+            logger.info(f"✅ Razorpay client initialized with key: {settings.RAZORPAY_KEY_ID[:10]}...")
             
             # Verify webhook signature
             client.utility.verify_webhook_signature(
                 webhook_body, signature, settings.RAZORPAY_WEBHOOK_SECRET
             )
-            logger.info("Webhook signature verification successful")
+            logger.info("✅ Webhook signature verification successful")
             
             # Parse the webhook data
             webhook_data = json.loads(webhook_body)
             event = webhook_data.get('event')
             payload = webhook_data.get('payload', {})
             
-            logger.info(f"Processing webhook event: {event}")
-            logger.debug(f"Webhook payload: {json.dumps(payload, indent=2)}")
+            logger.info(f"🎯 Processing webhook event: {event}")
+            logger.debug(f"📦 Webhook payload: {json.dumps(payload, indent=2)}")
             
             # Handle different events
             if event == 'payment.captured':
+                logger.info("💰 Handling payment.captured event")
                 self.handle_payment_captured(payload)
             elif event == 'payment.failed':
+                logger.info("❌ Handling payment.failed event")
                 self.handle_payment_failed(payload)
             elif event == 'order.paid':
+                logger.info("✅ Handling order.paid event")
                 self.handle_order_paid(payload)
             else:
-                logger.warning(f"Unhandled webhook event: {event}")
+                logger.warning(f"⚠️ Unhandled webhook event: {event}")
+                logger.warning(f"Available events in payload: {list(webhook_data.keys())}")
             
+            logger.info("✅ Webhook processed successfully")
             return HttpResponse(status=200)
             
         except Exception as e:
-            logger.error(f"Error processing webhook: {str(e)}")
+            logger.error(f"❌ Error processing webhook: {str(e)}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            import traceback
+            logger.error(f"Traceback: {traceback.format_exc()}")
             return HttpResponse(status=400)
     
     def handle_payment_captured(self, payload):
