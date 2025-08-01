@@ -58,7 +58,12 @@ def send_order_approval_email(order):
             # Convert UTC to IST (UTC+5:30)
             ist_time = order.created_at + timezone.timedelta(hours=5, minutes=30)
             order_date = safe(ist_time.strftime('%d %b %Y, %I:%M %p'))
-            order_total = safe(order.total)
+            
+            # Calculate product total and shipping charge
+            product_total = safe(order.total)
+            shipping_charge = safe(order.shipping_charge if order.shipping_charge else 0)
+            order_total = float(order.total) + float(order.shipping_charge if order.shipping_charge else 0)
+            order_total = safe(str(order_total))
             
             subject = safe(f'Order Approved - Order #{order_id}')
             html_message = f"""
@@ -81,7 +86,12 @@ def send_order_approval_email(order):
                     <div style="padding: 30px; background-color: #f0f9ff; margin: 20px; border-radius: 8px; border-left: 4px solid #0ea5e9;">
                         <h2 style="color: #0ea5e9; font-size: 20px; margin: 0 0 8px 0; font-weight: 600;">Order #{order_id}</h2>
                         <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Placed on:</strong> {order_date}</p>
-                        <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Order Total:</strong> ₹{order_total}</p>
+                        <div style="background-color: #ffffff; padding: 15px; border-radius: 6px; margin: 10px 0;">
+                            <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Product Total:</strong> ₹{product_total}</p>
+                            <p style="color: #374151; margin: 5px 0; font-size: 14px;"><strong>Shipping Charge:</strong> ₹{shipping_charge}</p>
+                            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 8px 0;">
+                            <p style="color: #0ea5e9; margin: 5px 0; font-size: 16px; font-weight: 600;"><strong>Total Amount:</strong> ₹{order_total}</p>
+                        </div>
                     </div>
                     
                     <!-- Approval Message -->
