@@ -20,10 +20,10 @@ const OfferSection = () => {
         {/* Left - Text Content */}
         <div className="space-y-6 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            <span className="text-black">Rakshabandhan Special Offer</span>
+            <span className="text-black">Visit Our Stall 🛍️</span>
           </h2>
           <p className="text-lg md:text-xl text-white/90">
-            Up to <span className="font-bold text-black">50% OFF</span> on premium cosmetics. Glow brighter this season with our handpicked beauty essentials.
+            We are coming to meet you at <span className="font-bold text-black">Beauty & Salon Trade Show</span> in Ahmedabad. Don't miss out on our exclusive offers!
           </p>
           <a
             href="/shop"
@@ -36,7 +36,7 @@ const OfferSection = () => {
         {/* Right - Image */}
         <div className="relative z-10">
           <img
-            src="/images/offer_poster.jpg"
+            src="/images/offer_poster.png"
             alt="Special Offer"
             className="w-full max-w-md mx-auto rounded-3xl shadow-2xl animate-slide-in-right"
           />
