@@ -23,7 +23,7 @@ const OfferSection = () => {
             <span className="text-black">Visit Our Stall 🛍️</span>
           </h2>
           <p className="text-lg md:text-xl text-white/90">
-            We are coming to meet you at <span className="font-bold text-black">Beauty & Salon Trade Show</span> in Ahmedabad. Don't miss out on our exclusive offers!
+            We are coming to meet you at <span className="font-bold text-black">Aakar Beauty Salon Expo</span> in Ahmedabad. Don't miss out on our exclusive offers!
           </p>
           <a
             href="/shop"
