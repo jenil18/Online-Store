@@ -20,10 +20,10 @@ const OfferSection = () => {
         {/* Left - Text Content */}
         <div className="space-y-6 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            <span className="text-black">Visit Our Stall 🛍️</span>
+            <span className="text-black">Visit Our Showroom 🛍️</span>
           </h2>
           <p className="text-lg md:text-xl text-white/90">
-            We are coming to meet you at <span className="font-bold text-black">Aakar Beauty Salon Expo</span> in Ahmedabad. Don't miss out on our exclusive offers!
+            We are available at <span className="font-bold text-black">Nikol</span> Ahmedabad. Which is one stop solution for all your beauty needs. Come and explore our wide range of products and services designed to enhance your beauty and confidence.
           </p>
           <a
             href="/shop"
