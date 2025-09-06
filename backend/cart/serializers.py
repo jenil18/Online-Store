@@ -18,9 +18,11 @@ class CartItemSerializer(serializers.ModelSerializer):
 class OrderSerializer(serializers.ModelSerializer):
     items = CartItemSerializer(many=True, read_only=True)
     user_username = serializers.CharField(source='user.username', read_only=True)
+    user_name = serializers.CharField(source='user.name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
     shipping_charge = serializers.IntegerField(read_only=True)
     
     class Meta:
         model = Order
-        fields = ['id', 'user', 'user_username', 'items', 'total', 'payment_status', 'transaction_id', 'created_at', 'status', 'address', 'admin_comment', 'decision_time', 'shipping_charge']
-        read_only_fields = ['user', 'total', 'payment_status', 'transaction_id', 'created_at', 'status', 'admin_comment', 'decision_time' , 'shipping_charge'] 
+        fields = ['id', 'user', 'user_username','user_name', 'user_phone', 'items', 'total', 'payment_status', 'transaction_id', 'created_at', 'status', 'address', 'admin_comment', 'decision_time', 'shipping_charge']
+        read_only_fields = ['user','user_name', 'user_phone', 'total', 'payment_status', 'transaction_id', 'created_at', 'status', 'admin_comment', 'decision_time' , 'shipping_charge'] 
