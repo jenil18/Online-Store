@@ -24,7 +24,7 @@ const Register = () => {
 
   const handleRegister = async () => {
     const { name, username, email, password, phone, altPhone, address, city, salon } = form;
-    if (!name || !username || !email || !password) {
+    if (!name || !username || !email || !password || !phone || !address || !city) {
       setError("Please fill in all required fields.");
       return;
     }
@@ -32,18 +32,18 @@ const Register = () => {
     // Username: must start with a letter, only letters and numbers
     const usernameRegex = /^[A-Za-z][A-Za-z0-9]*$/;
     if (!usernameRegex.test(username)) {
-      setError("Username must start with a letter and contain only letters and numbers.");
+      setError("Username must contain only letters and numbers.");
       return;
     }
 
     // Phone and altPhone: only numbers, exactly 10 digits
     const phoneRegex = /^\d{10}$/;
     if (!phoneRegex.test(phone)) {
-      setError("Phone must be exactly 10 digits.");
+      setError("Enter Valid Phone Number.");
       return;
     }
     if (altPhone && !phoneRegex.test(altPhone)) {
-      setError("Alternate phone must be exactly 10 digits.");
+      setError("Enter Valid Alternate Phone Number.");
       return;
     }
 
