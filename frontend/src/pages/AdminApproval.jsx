@@ -195,7 +195,7 @@ const AdminApproval = () => {
                       </h4>
                       <div className="space-y-2 text-sm">
                         <p className="text-gray-600"><strong>User:</strong> {order.user_username || 'Unknown User'}</p>
-                        <p className="text-gray-600"><strong>Name:</strong> {order.name || 'Unknown User'}</p>
+                        <p className="text-gray-600"><strong>Name:</strong> {order.user_name || 'Unknown User'}</p>
                         <p className="text-gray-600 flex items-start">
                           <MapPin className="w-4 h-4 mr-2 mt-0.5 text-pink-600 flex-shrink-0" />
                           <span><strong>Address:</strong> {order.address || 'Address not provided'}</span>
