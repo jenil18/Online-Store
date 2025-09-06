@@ -47,25 +47,25 @@ export default function AuthPage() {
         }
       } else {
         // Validation for registration
-        if (!name || !username || !email || !password) {
+        if (!name || !username || !email || !password || !phone || !address || !city) {
           setError("Please fill in all required fields.");
           setLoading(false);
           return;
         }
         const usernameRegex = /^[A-Za-z][A-Za-z0-9]*$/;
         if (!usernameRegex.test(username)) {
-          setError("Username must start with a letter and contain only letters and numbers.");
+          setError("Username must contain only letters and numbers.");
           setLoading(false);
           return;
         }
         const phoneRegex = /^\d{10}$/;
         if (!phoneRegex.test(phone)) {
-          setError("Phone must be exactly 10 digits.");
+          setError("Enter Valid Phone Number.");
           setLoading(false);
           return;
         }
         if (altPhone && !phoneRegex.test(altPhone)) {
-          setError("Alternate phone must be exactly 10 digits.");
+          setError("Enter Valid Alternate Phone Number.");
           setLoading(false);
           return;
         }
@@ -147,18 +147,20 @@ export default function AuthPage() {
           {!isLogin && (
             <>
               <div>
-                <label className="block mb-1 text-gray-600">Name</label>
+                <label className="block mb-1 text-gray-600">Name *</label>
                 <input
                   type="text"
+                  required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
                 />
               </div>
               <div>
-                <label className="block mb-1 text-gray-600">Phone Number</label>
+                <label className="block mb-1 text-gray-600">Phone Number *</label>
                 <input
                   type="tel"
+                  required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
@@ -174,9 +176,10 @@ export default function AuthPage() {
                 />
               </div>
               <div>
-                <label className="block mb-1 text-gray-600">Email</label>
+                <label className="block mb-1 text-gray-600">Email *</label>
                 <input
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
@@ -192,18 +195,20 @@ export default function AuthPage() {
                 />
               </div>
               <div>
-                <label className="block mb-1 text-gray-600">Address</label>
+                <label className="block mb-1 text-gray-600">Address *</label>
                 <input
                   type="text"
+                  required
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
                 />
               </div>
               <div>
-                <label className="block mb-1 text-gray-600">City</label>
+                <label className="block mb-1 text-gray-600">City *</label>
                 <input
                   type="text"
+                  required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
