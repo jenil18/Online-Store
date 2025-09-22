@@ -15,6 +15,7 @@ export default function CartPage() {
 
   const coupons = {
     SAVE10: 0.1,
+    KRISHNARAS09: 0.09,
   };
 
   const applyCoupon = () => {
@@ -149,7 +150,7 @@ export default function CartPage() {
                   type="text"
                   value={coupon}
                   onChange={(e) => setCoupon(e.target.value)}
-                  placeholder="Enter coupon code (e.g., GLOW30)"
+                  placeholder="Enter coupon code here"
                   className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 bg-gray-50"
                 />
                 <button

@@ -139,7 +139,7 @@ export default function AuthPage() {
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="ex : User123"
+              placeholder="example : User123"
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-pink-400"
             />
           </div>
