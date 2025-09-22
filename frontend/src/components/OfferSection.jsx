@@ -20,10 +20,10 @@ const OfferSection = () => {
         {/* Left - Text Content */}
         <div className="space-y-6 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            <span className="text-black">Visit Our Showroom 🛍️</span>
+            <span className="text-black">Happy Navratri! 🕺🏼💃🏼</span>
           </h2>
           <p className="text-lg md:text-xl text-white/90">
-            We are available at <span className="font-bold text-black">Nikol</span> Ahmedabad. Which is one stop solution for all your beauty needs. Come and explore our wide range of products and services designed to enhance your beauty and confidence.
+            This Navratri, Glow like a Goddess! With Coupon Code <span className="font-bold text-black">KrishnaRas09</span> get extra 9% discount on final amount. Offer valid till Navratri.
           </p>
           <a
             href="/shop"
