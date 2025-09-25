@@ -63,6 +63,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "backend.urls"
+SESSION_COOKIE_AGE = 1728000  # 20 DAYS in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 TEMPLATES = [
     {

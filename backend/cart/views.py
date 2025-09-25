@@ -333,7 +333,7 @@ class AdminOrderApprovalView(APIView):
                         order.shipping_charge = 0
                     
                     # Send approval email
-                    send_order_approval_email(order)
+                    # send_order_approval_email(order)
                 else:
                     order.status = 'rejected'
                     comment = comment or "Order rejected."
@@ -691,7 +691,7 @@ class RazorpayWebhookView(APIView):
                     logger.info(f"Order {order_id} updated to completed status")
                     
                     # Send success email
-                    self.send_payment_success_email(order)
+                    # self.send_payment_success_email(order)
                     
                     # Clear cart items for the order
                     order.items.all().delete()
@@ -721,7 +721,7 @@ class RazorpayWebhookView(APIView):
                     logger.info(f"Order {order_id} updated to failed status")
                     
                     # Send failure email
-                    self.send_payment_failure_email(order)
+                    # self.send_payment_failure_email(order)
                     
                 except Order.DoesNotExist:
                     logger.error(f"Order {order_id} not found in database")
