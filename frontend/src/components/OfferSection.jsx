@@ -20,10 +20,10 @@ const OfferSection = () => {
         {/* Left - Text Content */}
         <div className="space-y-6 animate-fade-in">
           <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
-            <span className="text-black">Visit Our Showroom 🛍</span>
+            <span className="text-black">Happy Diwali</span> 🪔
           </h2>
           <p className="text-lg md:text-xl text-white/90">
-            We are available at <span className="font-bold text-black">Nikol, Ahmedabad.</span> Which is one stop solution for all your beauty needs.
+            May your Diwali sparkle with joy and enhance your inner beauty, from all of us at<span className="font-bold text-black">Shree Krishna Beauty Products!</span>
           </p>
           <a
             href="/shop"
@@ -36,7 +36,7 @@ const OfferSection = () => {
         {/* Right - Image */}
         <div className="relative z-10">
           <img
-            src="/images/default_offer_poster.png"
+            src="/images/offer_poster.png"
             alt="Special Offer"
             className="w-full max-w-md mx-auto rounded-3xl shadow-2xl animate-slide-in-right"
           />
